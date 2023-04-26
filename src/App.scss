@@ -1,0 +1,69 @@
+.game-tile {
+  width: 33%;
+  height: 100%;
+  background-color: #eee;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+  display: inline-block;
+}
+
+.game-row {
+  width: 100%;
+  height: 33%;
+  display: block;
+}
+
+
+.game-face {
+  width: 256px;
+  height: 256px;
+  transform-style: preserve-3d;
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.tilt-up, .tilt-down, .tilt-right, .tilt-left {
+  opacity: 50%;
+}
+
+
+.tilt-right, .tilt-left, .tilt-none {
+  display: inline-block;
+}
+
+.tilt-none {
+  transform: translateX(-50%) translateY(-50%);
+}
+
+.tilt-up {
+  transform: translateX(-50%) translateY(33%) scale(90%) rotateX(-45deg);
+}
+
+.tilt-down {
+  transform: translateX(-50%) translateY(-133%) scale(90%) rotateX(45deg);
+}
+
+.tilt-left {
+  transform: translateY(-50%) translateX(-133%) scale(90%) rotateY(-45deg);
+}
+
+.tilt-right {
+  transform: translateY(-50%) translateX(33%) scale(90%) rotateY(45deg);
+}
+
+.game-container {
+  perspective: 1000px;
+}
+
+.App {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+html, body, #root, .App {
+  height: 100%;
+}
