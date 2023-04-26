@@ -1,7 +1,7 @@
 import React from 'react';
 import './App.scss';
 
-function Tile({ colorID }) {
+function Tile({ colorID }: { colorID: number }) {
   let colors = ["red", "green", "blue", "orange", "yellow", "purple"];
   let color = colors[colorID];
   return (
@@ -9,7 +9,7 @@ function Tile({ colorID }) {
   );
 }
 
-function Row({ children }) {
+function Row({ children }: { children: React.ReactNode }) {
   return (
     <div className="game-row">
       {children}
@@ -17,8 +17,21 @@ function Row({ children }) {
   );
 }
 
+interface FaceState {
+  face: number[][];
+}
+
+interface FaceProps {
+  value?: number;
+  visible?: boolean;
+  tilt?: "none" | "left" | "right" | "up" | "down";
+}
+
 class Face extends React.Component {
-  constructor(props) {
+  state: FaceState;
+  props!: FaceProps;
+
+  constructor(props: FaceProps) {
     super(props);
     let value = props.value || 0;
     this.state = {
@@ -30,7 +43,7 @@ class Face extends React.Component {
     };
   }
 
-  get face() {
+  get face(): number[][] {
     return structuredClone(this.state.face);
   }
 
@@ -38,11 +51,11 @@ class Face extends React.Component {
     this.setState({ face: face });
   }
 
-  getRow(rowIndex) {
+  getRow(rowIndex: number): number[] {
     return this.face[rowIndex];
   }
 
-  setRow(rowIndex, rowData) {
+  setRow(rowIndex: number, rowData: number[]): void {
     let face = this.face;
 
     for (let i = 0; i < rowData.length; i++)
@@ -51,7 +64,7 @@ class Face extends React.Component {
     this.face = face;
   }
 
-  getCol(colIndex) {
+  getCol(colIndex: number): number[] {
     let face = this.face;
     let colData = [];
 
@@ -61,7 +74,7 @@ class Face extends React.Component {
     return colData;
   }
 
-  setCol(colIndex, colData) {
+  setCol(colIndex: number, colData: number[]): void {
     let face = this.face;
 
     for (let i = 0; i < colData.length; i++)
@@ -70,7 +83,7 @@ class Face extends React.Component {
     this.face = face;
   }
 
-  rotateClockwise() {
+  rotateClockwise(): void {
     let face = this.face;
     let faceRotated = [
       [face[2][0], face[1][0], face[0][0]],
@@ -80,7 +93,7 @@ class Face extends React.Component {
     this.face = faceRotated;
   }
 
-  rotateCounterClockwise() {
+  rotateCounterClockwise(): void {
     let face = this.face;
     let faceRotated = [
       [face[0][2], face[1][2], face[2][2]],
@@ -90,7 +103,7 @@ class Face extends React.Component {
     this.face = faceRotated;
   }
 
-  render() {
+  render(): React.ReactNode {
     if (this.props.visible === false) // yes we need this because visible might not be defined
       return null;
 
@@ -117,31 +130,45 @@ class Face extends React.Component {
   }
 }
 
+interface FaceRefProps extends FaceProps {
+  faceRef: React.RefObject<Face>;
+}
+
 class FaceRefFlipped extends Face {
+  props!: FaceRefProps;
+
   get face() {
+    if (this.props.faceRef.current === null)
+      throw new Error("FaceRefFlipped.face: faceRef.current is null (somehow????)");
+
     let face = this.props.faceRef.current.face;
     return face.slice().reverse();
   }
 
   set face(face) {
+    if (this.props.faceRef.current === null)
+      throw new Error("FaceRefFlipped.face: faceRef.current is null (somehow????)");
+
     this.props.faceRef.current.face = face.slice().reverse();
   }
 }
 
+interface BoardProps { }
+
 class Board extends React.Component {
-  constructor(props) {
+  _board: (React.RefObject<Face> | null)[][];
+
+  constructor(props: BoardProps) {
     super(props);
 
-    window.test = this;
-
     let faceRefs = [
-      React.createRef(),
-      React.createRef(),
-      React.createRef(),
-      React.createRef(),
-      React.createRef(),
-      React.createRef(),
-      React.createRef()
+      React.createRef<Face>(),
+      React.createRef<Face>(),
+      React.createRef<Face>(),
+      React.createRef<Face>(),
+      React.createRef<Face>(),
+      React.createRef<Face>(),
+      React.createRef<Face>()
     ];
 
     this._board = [
@@ -152,23 +179,27 @@ class Board extends React.Component {
     ];
   }
 
-  getFaceRef(y, x) {
-    return this._board[y][x];
+  getFaceRef(y: number, x: number): React.RefObject<Face> {
+    let faceRef = this._board[y][x];
+    if (faceRef === null)
+      throw new Error("Board.getFaceRef: faceRef is null (somehow????)");
+
+    return faceRef;
   }
 
-  /**
-   * @param {number} x 
-   * @param {number} y 
-   * @returns {Face}
-   */
-  getFace(y, x) {
-    return this.getFaceRef(y, x).current;
+  getFace(y: number, x: number): Face {
+    let faceRef = this.getFaceRef(y, x);
+
+    if (faceRef === null)
+      throw new Error("Board.getFace: faceRef is null (somehow????)");
+
+    if (faceRef.current === null)
+      throw new Error("Board.getFace: faceRef.current is null (somehow????)");
+
+    return faceRef.current;
   }
 
-  /** 
-    * @param {number} row
-   */
-  rotateRowRight(rowIndex) {
+  rotateRowRight(rowIndex: number): void {
     let lastFaceRowData = this.getFace(0, 3).getRow(rowIndex);
 
     for (let i = 1; i <= 3; i++) 
@@ -183,7 +214,7 @@ class Board extends React.Component {
     }
   }
 
-  rotateRowLeft(rowIndex) {
+  rotateRowLeft(rowIndex: number) {
     let firstFaceRowData = this.getFace(0, 0).getRow(rowIndex);
 
     for (let i = 3; i >= 1; i--)
@@ -198,7 +229,7 @@ class Board extends React.Component {
     }
   }
 
-  rotateColUp(colIndex) {
+  rotateColUp(colIndex: number) {
     let firstFaceColData = this.getFace(0, 0).getCol(colIndex);
 
     for (let i = 3; i >= 1; i--)
@@ -213,7 +244,7 @@ class Board extends React.Component {
     }
   }
 
-  rotateColDown(colIndex) {
+  rotateColDown(colIndex: number) {
     let lastFaceColData = this.getFace(3, 0).getCol(colIndex);
 
     for (let i = 1; i <= 3; i++)
@@ -233,7 +264,11 @@ class Board extends React.Component {
       <div className="game-container">
         <Face value={ 0 } ref={ this.getFaceRef(0, 0) } />
         <Face value={ 1 } ref={ this.getFaceRef(0, 1) } tilt="right" />
-        <FaceRefFlipped   ref={ this.getFaceRef(0, 2) } faceRef={ this.getFaceRef(2, 0) } visible={ false } />
+        <FaceRefFlipped
+          ref={ (this.getFaceRef(0, 2) as React.RefObject<FaceRefFlipped>) }
+          faceRef={ this.getFaceRef(2, 0) }
+          visible={ false }
+        />
         <Face value={ 2 } ref={ this.getFaceRef(0, 3) } tilt="left" />
         <Face value={ 3 } ref={ this.getFaceRef(1, 0) } tilt="up" />
         <Face value={ 4 } ref={ this.getFaceRef(2, 0) } visible={ false } />
