@@ -54,6 +54,10 @@
   transform: translateY(-50%) translateX(33%) scale(90%) rotateY(45deg);
 }
 
+.tilt-test2 {
+  transform: translateX(50%) translateY(-150%) scale(50%);
+}
+
 .game-container {
   perspective: 1000px;
 }

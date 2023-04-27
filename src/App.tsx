@@ -1,15 +1,25 @@
 import React from 'react';
 import './App.scss';
 
-function Tile({ colorID }: { colorID: number }) {
+interface TileProps {
+  colorID: number;
+  onClick?: () => void;
+}
+
+function Tile(props: TileProps): JSX.Element {
   let colors = ["red", "green", "blue", "orange", "yellow", "purple"];
-  let color = colors[colorID];
+  let color = colors[props.colorID];
   return (
-    <div style={{ background: color }} className="game-tile"></div>
+    <div
+      onClick={props.onClick}
+      style={{ background: color }}
+      className="game-tile"
+    >
+    </div>
   );
 }
 
-function Row({ children }: { children: React.ReactNode }) {
+function Row({ children }: { children: React.ReactNode }): JSX.Element {
   return (
     <div className="game-row">
       {children}
@@ -24,7 +34,8 @@ interface FaceState {
 interface FaceProps {
   value?: number;
   visible?: boolean;
-  tilt?: "none" | "left" | "right" | "up" | "down";
+  tilt?: "none" | "left" | "right" | "up" | "down" | "test1" | "test2";
+  onTileClick?: (rowIndex: number, colIndex: number) => void;
 }
 
 class Face extends React.Component {
@@ -49,6 +60,11 @@ class Face extends React.Component {
 
   set face(face) {
     this.setState({ face: face });
+  }
+
+  _handleTileClick(rowIndex: number, colIndex: number): void {
+    if (this.props.onTileClick)
+      this.props.onTileClick(rowIndex, colIndex);
   }
 
   getRow(rowIndex: number): number[] {
@@ -103,30 +119,34 @@ class Face extends React.Component {
     this.face = faceRotated;
   }
 
-  render(): React.ReactNode {
+  render(): JSX.Element | null {
     if (this.props.visible === false) // yes we need this because visible might not be defined
-      return null;
+      return null; 
 
     let tiltClass = "tilt-" + (this.props.tilt || "none");
+    let divContents = [];
+    for (let y = 0; y < 3; y++) {
+      let rowContents = [];
+      for (let x = 0; x < 3; x++) {
+        rowContents.push(
+          <Tile
+            key={ `${y}-${x}` }
+            onClick={ () => this._handleTileClick(y, x) }
+            colorID={ this.state.face[y][x] }
+          />
+        );
+      }
+      divContents.push(
+        <Row key={ y }>
+        {rowContents}
+        </Row>
+      );
+    }
     return (
       <div className={`game-face ${tiltClass}`}>
-        <Row>
-          <Tile colorID={ this.state.face[0][0] } />
-          <Tile colorID={ this.state.face[0][1] } />
-          <Tile colorID={ this.state.face[0][2] } />
-        </Row>
-        <Row>
-          <Tile colorID={ this.state.face[1][0] } />
-          <Tile colorID={ this.state.face[1][1] } />
-          <Tile colorID={ this.state.face[1][2] } />
-        </Row>
-        <Row>
-          <Tile colorID={ this.state.face[2][0] } />
-          <Tile colorID={ this.state.face[2][1] } />
-          <Tile colorID={ this.state.face[2][2] } />
-        </Row>
+        {divContents}
       </div>
-    )
+    );
   }
 }
 
@@ -134,32 +154,38 @@ interface FaceRefProps extends FaceProps {
   faceRef: React.RefObject<Face>;
 }
 
-class FaceRefFlipped extends Face {
+class FaceRef extends Face {
   props!: FaceRefProps;
 
   get face() {
+    console.log("FaceRef.face getter");
     if (this.props.faceRef.current === null)
-      throw new Error("FaceRefFlipped.face: faceRef.current is null (somehow????)");
+      throw new Error("FaceRef.face: faceRef.current is null (somehow????)");
 
-    let face = this.props.faceRef.current.face;
-    return face.slice().reverse();
+    return this.props.faceRef.current.face;
   }
 
   set face(face) {
     if (this.props.faceRef.current === null)
-      throw new Error("FaceRefFlipped.face: faceRef.current is null (somehow????)");
+      throw new Error("FaceRef.face: faceRef.current is null (somehow????)");
 
-    this.props.faceRef.current.face = face.slice().reverse();
+    this.props.faceRef.current.face = face;
   }
 }
 
 interface BoardProps { }
+
+declare global {
+  interface Window { test: any; }
+}
 
 class Board extends React.Component {
   _board: (React.RefObject<Face> | null)[][];
 
   constructor(props: BoardProps) {
     super(props);
+
+    window.test = this;
 
     let faceRefs = [
       React.createRef<Face>(),
@@ -214,7 +240,7 @@ class Board extends React.Component {
     }
   }
 
-  rotateRowLeft(rowIndex: number) {
+  rotateRowLeft(rowIndex: number): void {
     let firstFaceRowData = this.getFace(0, 0).getRow(rowIndex);
 
     for (let i = 3; i >= 1; i--)
@@ -229,7 +255,7 @@ class Board extends React.Component {
     }
   }
 
-  rotateColUp(colIndex: number) {
+  rotateColUp(colIndex: number): void {
     let firstFaceColData = this.getFace(0, 0).getCol(colIndex);
 
     for (let i = 3; i >= 1; i--)
@@ -238,13 +264,13 @@ class Board extends React.Component {
     this.getFace(3, 0).setCol(colIndex, firstFaceColData);
 
     if (colIndex === 0) {
-      this.getFace(0, 1).rotateClockwise();
-    } else if (colIndex === 2) {
       this.getFace(0, 3).rotateCounterClockwise();
+    } else if (colIndex === 2) {
+      this.getFace(0, 1).rotateClockwise();
     }
   }
 
-  rotateColDown(colIndex: number) {
+  rotateColDown(colIndex: number): void {
     let lastFaceColData = this.getFace(3, 0).getCol(colIndex);
 
     for (let i = 1; i <= 3; i++)
@@ -253,26 +279,74 @@ class Board extends React.Component {
     this.getFace(0, 0).setCol(colIndex, lastFaceColData);
 
     if (colIndex === 0) {
-      this.getFace(0, 1).rotateCounterClockwise();
-    } else if (colIndex === 2) {
       this.getFace(0, 3).rotateClockwise();
+    } else if (colIndex === 2) {
+      this.getFace(0, 1).rotateCounterClockwise();
     }
   }
 
-  render() {
+  clickCenterFace(rowIndex: number, colIndex: number) {
+    console.log("clickCenterFace", rowIndex, colIndex);
+  }
+  clickTopFace(rowIndex: number, colIndex: number) {
+    console.log("clickTopFace", rowIndex, colIndex);
+    this.rotateColUp(colIndex);
+  }
+  clickBottomFace(rowIndex: number, colIndex: number) {
+    console.log("clickBottomFace", rowIndex, colIndex);
+    this.rotateColDown(colIndex);
+  }
+  clickLeftFace(rowIndex: number, colIndex: number) {
+    console.log("clickLeftFace", rowIndex, colIndex);
+    this.rotateRowLeft(rowIndex);
+  }
+  clickRightFace(rowIndex: number, colIndex: number) {
+    console.log("clickRightFace", rowIndex, colIndex);
+    this.rotateRowRight(rowIndex);
+  }
+
+  render(): JSX.Element {
     return (
       <div className="game-container">
-        <Face value={ 0 } ref={ this.getFaceRef(0, 0) } />
-        <Face value={ 1 } ref={ this.getFaceRef(0, 1) } tilt="right" />
-        <FaceRefFlipped
-          ref={ (this.getFaceRef(0, 2) as React.RefObject<FaceRefFlipped>) }
+        <Face
+          value={ 0 }
+          ref={ this.getFaceRef(0, 0) }
+          onTileClick={ this.clickCenterFace.bind(this) }
+          />
+        <Face
+          value={ 1 }
+          ref={ this.getFaceRef(0, 1) }
+          tilt="right"
+          onTileClick={ this.clickRightFace.bind(this) }
+        />
+        <FaceRef
+          ref={ (this.getFaceRef(0, 2) as React.RefObject<FaceRef>) }
           faceRef={ this.getFaceRef(2, 0) }
           visible={ false }
         />
-        <Face value={ 2 } ref={ this.getFaceRef(0, 3) } tilt="left" />
-        <Face value={ 3 } ref={ this.getFaceRef(1, 0) } tilt="up" />
-        <Face value={ 4 } ref={ this.getFaceRef(2, 0) } visible={ false } />
-        <Face value={ 5 } ref={ this.getFaceRef(3, 0) } tilt="down" />
+        <Face
+          value={ 2 }
+          ref={ this.getFaceRef(0, 3) }
+          tilt="left"
+          onTileClick={ this.clickLeftFace.bind(this) }
+          />
+        <Face
+          value={ 3 }
+          ref={ this.getFaceRef(1, 0) }
+          tilt="up"
+          onTileClick={ this.clickBottomFace.bind(this) }
+        />
+        <Face
+          value={ 4 }
+          ref={ this.getFaceRef(2, 0) }
+          tilt="test2"
+        />
+        <Face
+          value={ 5 }
+          ref={ this.getFaceRef(3, 0) }
+          tilt="down"
+          onTileClick={ this.clickTopFace.bind(this) }
+        />
       </div>
     );
   }
@@ -282,7 +356,6 @@ function App() {
   return (
     <div className="App">
       <Board />
-      <span>hi</span>
     </div>
   );
 }
