@@ -26,7 +26,7 @@
 }
 
 .tilt-up, .tilt-down, .tilt-right, .tilt-left {
-  opacity: 50%;
+  // opacity: 50%;
 }
 
 
@@ -34,23 +34,78 @@
   display: inline-block;
 }
 
+.tilt-animation {
+  animation-duration: 0.25s;
+  animation-fill-mode: forwards;
+  animation-timing-function: ease-out;
+  z-index: 9999;
+}
+
 .tilt-none {
+  @keyframes none-from-left {
+    0%   { transform: translateY(-50%) translateX(-133%) scale(90%) rotateY(-45deg); }
+    100% { transform: translateX(-50%) translateY(-50%); }
+  }
+  &.ani-from-left { animation-name: none-from-left; }
+
+  @keyframes none-from-right {
+    0%   { transform: translateY(-50%) translateX(33%) scale(90%) rotateY(45deg); }
+    100% { transform: translateX(-50%) translateY(-50%); }
+  }
+  &.ani-from-right { animation-name: none-from-right; }
+
+  @keyframes none-from-top {
+    0%   { transform: translateX(-50%) translateY(33%) scale(90%) rotateX(-45deg); }
+    100% { transform: translateX(-50%) translateY(-50%); }
+  }
+  &.ani-from-top { animation-name: none-from-top; }
+
+  @keyframes none-from-bottom {
+    0%   { transform: translateX(-50%) translateY(-133%) scale(90%) rotateX(45deg); }
+    100% { transform: translateX(-50%) translateY(-50%); }
+  }
+  &.ani-from-bottom { animation-name: none-from-bottom; }
+
   transform: translateX(-50%) translateY(-50%);
 }
 
 .tilt-up {
+  @keyframes to-top {
+    0%   { transform: translateX(-50%) translateY(-50%); }
+    100% { transform: translateX(-50%) translateY(33%) scale(90%) rotateX(-45deg); }
+  }
+  &.ani-to-top { animation-name: to-top; }
+
   transform: translateX(-50%) translateY(33%) scale(90%) rotateX(-45deg);
 }
 
 .tilt-down {
+  @keyframes to-bottom {
+    0%    { transform: translateX(-50%) translateY(-50%); }
+    100%  { transform: translateX(-50%) translateY(-133%) scale(90%) rotateX(45deg); }
+  }
+  &.ani-to-bottom { animation-name: to-bottom; }
+
   transform: translateX(-50%) translateY(-133%) scale(90%) rotateX(45deg);
 }
 
 .tilt-left {
+  @keyframes to-left {
+    0%   { transform: translateX(-50%) translateY(-50%); }
+    100% { transform: translateY(-50%) translateX(-133%) scale(90%) rotateY(-45deg); }
+  }
+  &.ani-to-left { animation-name: to-left; }
+
   transform: translateY(-50%) translateX(-133%) scale(90%) rotateY(-45deg);
 }
 
 .tilt-right {
+  @keyframes to-right {
+    0%   { transform: translateX(-50%) translateY(-50%); }
+    100% { transform: translateY(-50%) translateX(33%) scale(90%) rotateY(45deg); }
+  }
+  &.ani-to-right { animation-name: to-right; }
+
   transform: translateY(-50%) translateX(33%) scale(90%) rotateY(45deg);
 }
 

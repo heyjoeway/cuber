@@ -119,7 +119,7 @@ class Face extends React.Component {
     this.face = faceRotated;
   }
 
-  render(): JSX.Element | null {
+  renderFace(classes: string = ""): JSX.Element | null {
     if (this.props.visible === false) // yes we need this because visible might not be defined
       return null; 
 
@@ -143,11 +143,25 @@ class Face extends React.Component {
       );
     }
     return (
-      <div className={`game-face ${tiltClass}`}>
+      <div className={`game-face ${tiltClass} ${classes}`}>
         {divContents}
       </div>
     );
   }
+
+  renderFaceAnimation(): JSX.Element | null {
+    return this.renderFace("ani-from-left tilt-animation");
+  }
+
+  render(): JSX.Element | null {
+    return (
+      <div>
+        { this.renderFace() }
+        { this.renderFaceAnimation() }
+      </div>
+    );
+  }
+
 }
 
 interface FaceRefProps extends FaceProps {
@@ -237,7 +251,7 @@ class Board extends React.Component {
       this.getFace(3, 0).rotateCounterClockwise();
     } else if (rowIndex === 2) {
       this.getFace(1, 0).rotateClockwise();
-    }
+    } 
   }
 
   rotateRowLeft(rowIndex: number): void {
