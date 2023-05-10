@@ -9,7 +9,6 @@ class FaceRef extends Face {
     props!: FaceRefProps;
 
     get face() {
-        console.log("FaceRef.face getter");
         if (this.props.faceRef.current === null)
             throw new Error("FaceRef.face: faceRef.current is null (somehow????)");
 

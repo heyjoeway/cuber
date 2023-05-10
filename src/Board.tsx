@@ -3,11 +3,14 @@ import "./Board.scss";
 import React from "react";
 import Face from "./Face";
 import FaceRef from "./FaceRef";
+import KeyHandler from "./KeyHandler";
+import KeyHints from "./KeyHints";
 
 interface BoardProps { }
 
 class Board extends React.Component {
     _board: (React.RefObject<Face> | null)[][];
+    _keyHandler: React.RefObject<KeyHandler>;
 
     constructor(props: BoardProps) {
         super(props);
@@ -28,6 +31,8 @@ class Board extends React.Component {
             [faceRefs[5], null, null, null],
             [faceRefs[6], null, null, null]
         ];
+        
+        this._keyHandler = React.createRef<KeyHandler>();
     }
 
     getFaceRef(y: number, x: number): React.RefObject<Face> {
@@ -157,7 +162,31 @@ class Board extends React.Component {
     clickRightFace(rowIndex: number, colIndex: number) {
         this.rotateRowRight(rowIndex);
     }
+    onKeyDown(key: string) {
+        if (this._keyHandler.current?.isKeyDown("z")) {
+            if (key == "7") this.rotateRowLeft(0);
+            if (key == "4") this.rotateRowLeft(1);
+            if (key == "1") this.rotateRowLeft(2);
 
+            if (key == "9") this.rotateRowRight(0);
+            if (key == "6") this.rotateRowRight(1);
+            if (key == "3") this.rotateRowRight(2);
+        } else if (this._keyHandler.current?.isKeyDown("x")) {
+            if (key == "7") this.rotateColUp(0);
+            if (key == "8") this.rotateColUp(1);
+            if (key == "9") this.rotateColUp(2);
+
+            if (key == "1") this.rotateColDown(0);
+            if (key == "2") this.rotateColDown(1);
+            if (key == "3") this.rotateColDown(2);
+        }
+
+        console.log("onKeyDown", key);
+    }
+    onKeyUp(key: string) {
+        console.log("onKeyUp", key);
+    }
+    
     render(): JSX.Element {
         return (
             <div className="game-container">
@@ -200,6 +229,12 @@ class Board extends React.Component {
                     tilt="up"
                     onTileClick={this.clickTopFace.bind(this)}
                 />
+                <KeyHandler
+                    ref={ this._keyHandler }
+                    onKeyDown={ this.onKeyDown.bind(this) }
+                    onKeyUp={ this.onKeyUp.bind(this) }
+                />
+                <KeyHints />
             </div>
         );
     }

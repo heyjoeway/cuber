@@ -250,7 +250,7 @@ class Face extends React.Component {
 
     render(): JSX.Element | null {
         return (
-            <React.Fragment>
+            <React.Fragment> { /* prevents creation of new stacking context (breaks z-index) */ }
                 {this.renderFaceAnimation()}
                 {this.renderFace()}
             </React.Fragment>
