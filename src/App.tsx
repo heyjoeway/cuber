@@ -4,6 +4,7 @@ import './App.scss';
 interface TileProps {
   colorID: number;
   onClick?: () => void;
+  visible?: boolean;
 }
 
 function Tile(props: TileProps): JSX.Element {
@@ -12,7 +13,10 @@ function Tile(props: TileProps): JSX.Element {
   return (
     <div
       onClick={props.onClick}
-      style={{ background: color }}
+      style={{
+        background: color,
+        opacity: props.visible ? 1 : 0
+      }}
       className="game-tile"
     >
     </div>
@@ -29,6 +33,10 @@ function Row({ children }: { children: React.ReactNode }): JSX.Element {
 
 interface FaceState {
   face: number[][];
+  faceChangedPrev: boolean[][]; // used for animation
+  animation: "none" | "rotate-cw" | "rotate-ccw";
+  actionPrev: "none" | "up" | "down" | "left" | "right";
+  keyIncrement: number;
 }
 
 interface FaceProps {
@@ -50,16 +58,33 @@ class Face extends React.Component {
         [value, value, value],
         [value, value, value],
         [value, value, value]
-      ]
+      ],
+      faceChangedPrev: [
+        [false, false, false],
+        [false, false, false],
+        [false, false, false]
+      ],
+      animation: "none",
+      keyIncrement: 0,
+      actionPrev: "none"
     };
   }
 
-  get face(): number[][] {
-    return structuredClone(this.state.face);
+  addKeyIncrement(): void {
+    this.setState({ keyIncrement: this.state.keyIncrement + 1 });
   }
 
-  set face(face) {
-    this.setState({ face: face });
+  get face(): number[][] { return structuredClone(this.state.face); }
+  set face(face) { this.setState({ face: face }); }
+
+  _clearFaceChangedPrev(): void {
+    this.setState({
+      faceChangedPrev: [
+        [false, false, false],
+        [false, false, false],
+        [false, false, false]
+      ]
+    });
   }
 
   _handleTileClick(rowIndex: number, colIndex: number): void {
@@ -73,11 +98,19 @@ class Face extends React.Component {
 
   setRow(rowIndex: number, rowData: number[]): void {
     let face = this.face;
+    let faceChanged = [
+      [false, false, false],
+      [false, false, false],
+      [false, false, false]
+    ];
 
-    for (let i = 0; i < rowData.length; i++)
+    for (let i = 0; i < rowData.length; i++) {
       face[rowIndex][i] = rowData[i];
+      faceChanged[rowIndex][i] = true;
+    }
 
     this.face = face;
+    this.setState({ faceChangedPrev: faceChanged });
   }
 
   getCol(colIndex: number): number[] {
@@ -92,11 +125,19 @@ class Face extends React.Component {
 
   setCol(colIndex: number, colData: number[]): void {
     let face = this.face;
+    let faceChanged = [
+      [false, false, false],
+      [false, false, false],
+      [false, false, false]
+    ];
 
-    for (let i = 0; i < colData.length; i++)
+    for (let i = 0; i < colData.length; i++) {
       face[i][colIndex] = colData[i];
+      faceChanged[i][colIndex] = true;
+    }
 
     this.face = face;
+    this.setState({ faceChangedPrev: faceChanged });
   }
 
   rotateClockwise(): void {
@@ -107,6 +148,9 @@ class Face extends React.Component {
       [face[2][2], face[1][2], face[0][2]]
     ];
     this.face = faceRotated;
+    this.setState({ animation: "rotate-cw" });
+    this._clearFaceChangedPrev();
+    this.addKeyIncrement(); // force re-render
   }
 
   rotateCounterClockwise(): void {
@@ -117,9 +161,12 @@ class Face extends React.Component {
       [face[0][0], face[1][0], face[2][0]]
     ];
     this.face = faceRotated;
+    this.setState({ animation: "rotate-ccw" });
+    this._clearFaceChangedPrev();
+    this.addKeyIncrement(); // force re-render
   }
 
-  renderFace(classes: string = ""): JSX.Element | null {
+  renderFace(): JSX.Element | null {
     if (this.props.visible === false) // yes we need this because visible might not be defined
       return null; 
 
@@ -133,6 +180,7 @@ class Face extends React.Component {
             key={ `${y}-${x}` }
             onClick={ () => this._handleTileClick(y, x) }
             colorID={ this.state.face[y][x] }
+            visible={ !this.state.faceChangedPrev[y][x] }
           />
         );
       }
@@ -143,21 +191,54 @@ class Face extends React.Component {
       );
     }
     return (
-      <div className={`game-face ${tiltClass} ${classes}`}>
+      <div
+        className={`game-face ${tiltClass} anim-${this.state.animation}`}
+        key={ this.state.keyIncrement }
+      >
         {divContents}
       </div>
     );
   }
 
   renderFaceAnimation(): JSX.Element | null {
-    return this.renderFace("ani-from-left tilt-animation");
+    if (this.props.visible === false) // yes we need this because visible might not be defined
+      return null; 
+
+    let tiltClass = "tilt-" + (this.props.tilt || "none");
+    let divContents = [];
+    for (let y = 0; y < 3; y++) {
+      let rowContents = [];
+      for (let x = 0; x < 3; x++) {
+        rowContents.push(
+          <Tile
+            key={ `${y}-${x}` }
+            colorID={ this.state.face[y][x] }
+            visible={ this.state.faceChangedPrev[y][x] }
+          />
+        );
+      }
+      divContents.push(
+        <Row key={ y }>
+        {rowContents}
+        </Row>
+      );
+    }
+    return (
+      <div
+        className={`game-face ${tiltClass} anim-${this.state.animation}`}
+        key={ `${this.state.keyIncrement}-anim` }
+        style={ { pointerEvents: "none" } }
+      >
+        {divContents}
+      </div>
+    );
   }
 
   render(): JSX.Element | null {
     return (
       <div>
         { this.renderFace() }
-        { this.renderFaceAnimation() }
+        {/* { this.renderFaceAnimation() } */}
       </div>
     );
   }

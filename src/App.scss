@@ -1,15 +1,20 @@
+:root {
+  --game-tilt-deg: 60deg;
+  --game-tilt-origin-z: -221.5px;
+}
+
 .game-tile {
-  width: 33%;
+  width: 33.33333333%;
   height: 100%;
   background-color: #eee;
-  border: 1px solid #ccc;
+  border: 4px solid black;
   box-sizing: border-box;
   display: inline-block;
 }
 
 .game-row {
   width: 100%;
-  height: 33%;
+  height: 33.33333333%;
   display: block;
 }
 
@@ -23,15 +28,12 @@
   left: 0;
   margin: 0;
   padding: 0;
-}
+  transform-origin: 50% 50% var(--game-tilt-origin-z);
+  animation-fill-mode: forwards;
+  animation-duration: 0.25s;
+  border: 4px solid black;
+  box-sizing: border-box;
 
-.tilt-up, .tilt-down, .tilt-right, .tilt-left {
-  // opacity: 50%;
-}
-
-
-.tilt-right, .tilt-left, .tilt-none {
-  display: inline-block;
 }
 
 .tilt-animation {
@@ -41,80 +43,96 @@
   z-index: 9999;
 }
 
-.tilt-none {
-  @keyframes none-from-left {
-    0%   { transform: translateY(-50%) translateX(-133%) scale(90%) rotateY(-45deg); }
-    100% { transform: translateX(-50%) translateY(-50%); }
-  }
-  &.ani-from-left { animation-name: none-from-left; }
+.rotate-animation {
+  animation-duration: 0.25s;
+  animation-fill-mode: forwards;
+  animation-timing-function: ease-out;
 
-  @keyframes none-from-right {
-    0%   { transform: translateY(-50%) translateX(33%) scale(90%) rotateY(45deg); }
-    100% { transform: translateX(-50%) translateY(-50%); }
-  }
-  &.ani-from-right { animation-name: none-from-right; }
+}
 
-  @keyframes none-from-top {
-    0%   { transform: translateX(-50%) translateY(33%) scale(90%) rotateX(-45deg); }
-    100% { transform: translateX(-50%) translateY(-50%); }
-  }
-  &.ani-from-top { animation-name: none-from-top; }
+.tilt-none  { 
+  transform: translateX(-50%) translateY( -50%) rotateX(  0deg) rotateY(0deg);
 
-  @keyframes none-from-bottom {
-    0%   { transform: translateX(-50%) translateY(-133%) scale(90%) rotateX(45deg); }
-    100% { transform: translateX(-50%) translateY(-50%); }
-  }
-  &.ani-from-bottom { animation-name: none-from-bottom; }
-
-  transform: translateX(-50%) translateY(-50%);
 }
 
 .tilt-up {
-  @keyframes to-top {
-    0%   { transform: translateX(-50%) translateY(-50%); }
-    100% { transform: translateX(-50%) translateY(33%) scale(90%) rotateX(-45deg); }
+  @keyframes anim-tilt-up-rotate-cw {
+    0%   { transform: translateX(-50%) translateY( -50%) rotateX(calc(-1 * var(--game-tilt-deg))) rotateZ(-90deg); }
+    100% { transform: translateX(-50%) translateY( -50%) rotateX(calc(-1 * var(--game-tilt-deg))) rotateZ(0deg);   }
   }
-  &.ani-to-top { animation-name: to-top; }
 
-  transform: translateX(-50%) translateY(33%) scale(90%) rotateX(-45deg);
+  @keyframes anim-tilt-up-rotate-ccw {
+    0%   { transform: translateX(-50%) translateY( -50%) rotateX(calc(-1 * var(--game-tilt-deg))) rotateZ(90deg); }
+    100% { transform: translateX(-50%) translateY( -50%) rotateX(calc(-1 * var(--game-tilt-deg))) rotateZ(0deg);  }
+  }
+
+  &.anim-rotate-cw { animation-name: anim-tilt-up-rotate-cw; }
+  &.anim-rotate-ccw { animation-name: anim-tilt-up-rotate-ccw; }
+
+  transform: translateX(-50%) translateY( -50%) rotateX(calc(-1 * var(--game-tilt-deg)));
 }
 
 .tilt-down {
-  @keyframes to-bottom {
-    0%    { transform: translateX(-50%) translateY(-50%); }
-    100%  { transform: translateX(-50%) translateY(-133%) scale(90%) rotateX(45deg); }
+  @keyframes anim-tilt-down-rotate-cw {
+    0%   { transform: translateX(-50%) translateY( -50%) rotateX(var(--game-tilt-deg)) rotateZ(-90deg); }
+    100% { transform: translateX(-50%) translateY( -50%) rotateX(var(--game-tilt-deg)) rotateZ(0deg);   }
   }
-  &.ani-to-bottom { animation-name: to-bottom; }
 
-  transform: translateX(-50%) translateY(-133%) scale(90%) rotateX(45deg);
+  @keyframes anim-tilt-down-rotate-ccw {
+    0%   { transform: translateX(-50%) translateY( -50%) rotateX(var(--game-tilt-deg)) rotateZ(90deg); }
+    100% { transform: translateX(-50%) translateY( -50%) rotateX(var(--game-tilt-deg)) rotateZ(0deg);  }
+  }
+
+  &.anim-rotate-cw { animation-name: anim-tilt-down-rotate-cw; }
+  &.anim-rotate-ccw { animation-name: anim-tilt-down-rotate-ccw; }
+
+  transform: translateX(-50%) translateY( -50%) rotateX( var(--game-tilt-deg));
 }
 
-.tilt-left {
-  @keyframes to-left {
-    0%   { transform: translateX(-50%) translateY(-50%); }
-    100% { transform: translateY(-50%) translateX(-133%) scale(90%) rotateY(-45deg); }
+.tilt-left  {
+  @keyframes anim-tilt-left-rotate-cw {
+    0%   { transform: translateX(-50%) translateY( -50%) rotateY(calc(-1 * var(--game-tilt-deg))) rotateZ(-90deg); }
+    100% { transform: translateX(-50%) translateY( -50%) rotateY(calc(-1 * var(--game-tilt-deg))) rotateZ(0deg);   }
   }
-  &.ani-to-left { animation-name: to-left; }
 
-  transform: translateY(-50%) translateX(-133%) scale(90%) rotateY(-45deg);
+  @keyframes anim-tilt-left-rotate-ccw {
+    0%   { transform: translateX(-50%) translateY( -50%) rotateY(calc(-1 * var(--game-tilt-deg))) rotateZ(90deg); }
+    100% { transform: translateX(-50%) translateY( -50%) rotateY(calc(-1 * var(--game-tilt-deg))) rotateZ(0deg);  }
+  }
+
+  &.anim-rotate-cw { animation-name: anim-tilt-left-rotate-cw; }
+  &.anim-rotate-ccw { animation-name: anim-tilt-left-rotate-ccw; }
+
+  transform: translateX(-50%) translateY( -50%) rotateY(calc(-1 * var(--game-tilt-deg)));
 }
 
 .tilt-right {
-  @keyframes to-right {
-    0%   { transform: translateX(-50%) translateY(-50%); }
-    100% { transform: translateY(-50%) translateX(33%) scale(90%) rotateY(45deg); }
+  @keyframes anim-tilt-right-rotate-cw {
+    0%   { transform: translateX(-50%) translateY( -50%) rotateY(var(--game-tilt-deg)) rotateZ(-90deg); }
+    100% { transform: translateX(-50%) translateY( -50%) rotateY(var(--game-tilt-deg)) rotateZ(0deg);   }
   }
-  &.ani-to-right { animation-name: to-right; }
 
-  transform: translateY(-50%) translateX(33%) scale(90%) rotateY(45deg);
+  @keyframes anim-tilt-right-rotate-ccw {
+    0%   { transform: translateX(-50%) translateY( -50%) rotateY(var(--game-tilt-deg)) rotateZ(90deg); }
+    100% { transform: translateX(-50%) translateY( -50%) rotateY(var(--game-tilt-deg)) rotateZ(0deg);  }
+  }
+
+  &.anim-rotate-cw { animation-name: anim-tilt-right-rotate-cw; }
+  &.anim-rotate-ccw { animation-name: anim-tilt-right-rotate-ccw; }
+
+  transform: translateX(-50%) translateY( -50%) rotateY(var(--game-tilt-deg));
 }
 
-.tilt-test2 {
-  transform: translateX(50%) translateY(-150%) scale(50%);
+.tilt-test2 { 
+  transform: translateX( 50%) translateY(-150%) scale(70%);
+
 }
+
 
 .game-container {
-  perspective: 1000px;
+  & > div {
+    perspective: 1000px;
+  }
 }
 
 .App {
