@@ -34,8 +34,7 @@ function Row({ children }: { children: React.ReactNode }): JSX.Element {
 interface FaceState {
   face: number[][];
   faceChangedPrev: boolean[][]; // used for animation
-  animation: "none" | "rotate-cw" | "rotate-ccw";
-  actionPrev: "none" | "up" | "down" | "left" | "right";
+  animation: "none" | "rotate-cw" | "rotate-ccw" | "up" | "down" | "left" | "right";
   keyIncrement: number;
 }
 
@@ -65,8 +64,7 @@ class Face extends React.Component {
         [false, false, false]
       ],
       animation: "none",
-      keyIncrement: 0,
-      actionPrev: "none"
+      keyIncrement: 0
     };
   }
 
@@ -77,12 +75,27 @@ class Face extends React.Component {
   get face(): number[][] { return structuredClone(this.state.face); }
   set face(face) { this.setState({ face: face }); }
 
+  set animation(animation: FaceState["animation"]) {
+    this.setState({ animation: animation });
+    this.addKeyIncrement(); // force re-render
+  }
+
   _clearFaceChangedPrev(): void {
     this.setState({
       faceChangedPrev: [
         [false, false, false],
         [false, false, false],
         [false, false, false]
+      ]
+    });
+  }
+
+  _setAllFaceChangedPrev(): void {
+    this.setState({
+      faceChangedPrev: [
+        [true, true, true],
+        [true, true, true],
+        [true, true, true]
       ]
     });
   }
@@ -96,7 +109,7 @@ class Face extends React.Component {
     return this.face[rowIndex];
   }
 
-  setRow(rowIndex: number, rowData: number[]): void {
+  setRow(rowIndex: number, rowData: number[], animation: FaceState["animation"] = "none"): void {
     let face = this.face;
     let faceChanged = [
       [false, false, false],
@@ -111,6 +124,7 @@ class Face extends React.Component {
 
     this.face = face;
     this.setState({ faceChangedPrev: faceChanged });
+    this.animation = animation;
   }
 
   getCol(colIndex: number): number[] {
@@ -123,7 +137,7 @@ class Face extends React.Component {
     return colData;
   }
 
-  setCol(colIndex: number, colData: number[]): void {
+  setCol(colIndex: number, colData: number[], animation: FaceState["animation"] = "none"): void {
     let face = this.face;
     let faceChanged = [
       [false, false, false],
@@ -138,6 +152,7 @@ class Face extends React.Component {
 
     this.face = face;
     this.setState({ faceChangedPrev: faceChanged });
+    this.animation = animation;
   }
 
   rotateClockwise(): void {
@@ -148,9 +163,8 @@ class Face extends React.Component {
       [face[2][2], face[1][2], face[0][2]]
     ];
     this.face = faceRotated;
-    this.setState({ animation: "rotate-cw" });
-    this._clearFaceChangedPrev();
-    this.addKeyIncrement(); // force re-render
+    this._setAllFaceChangedPrev();
+    this.animation = "rotate-cw";
   }
 
   rotateCounterClockwise(): void {
@@ -161,9 +175,8 @@ class Face extends React.Component {
       [face[0][0], face[1][0], face[2][0]]
     ];
     this.face = faceRotated;
-    this.setState({ animation: "rotate-ccw" });
-    this._clearFaceChangedPrev();
-    this.addKeyIncrement(); // force re-render
+    this._setAllFaceChangedPrev();
+    this.animation = "rotate-ccw";
   }
 
   renderFace(): JSX.Element | null {
@@ -192,7 +205,7 @@ class Face extends React.Component {
     }
     return (
       <div
-        className={`game-face ${tiltClass} anim-${this.state.animation}`}
+        className={`game-face ${tiltClass}`}
         key={ this.state.keyIncrement }
       >
         {divContents}
@@ -225,7 +238,7 @@ class Face extends React.Component {
     }
     return (
       <div
-        className={`game-face ${tiltClass} anim-${this.state.animation}`}
+        className={`game-face game-face-anim ${tiltClass} anim-${this.state.animation}`}
         key={ `${this.state.keyIncrement}-anim` }
         style={ { pointerEvents: "none" } }
       >
@@ -236,10 +249,10 @@ class Face extends React.Component {
 
   render(): JSX.Element | null {
     return (
-      <div>
+      <React.Fragment>
+        { this.renderFaceAnimation() }
         { this.renderFace() }
-        {/* { this.renderFaceAnimation() } */}
-      </div>
+      </React.Fragment>
     );
   }
 
@@ -324,9 +337,17 @@ class Board extends React.Component {
     let lastFaceRowData = this.getFace(0, 3).getRow(rowIndex);
 
     for (let i = 1; i <= 3; i++) 
-      this.getFace(0, i).setRow(rowIndex, this.getFace(0, i - 1).getRow(rowIndex));
+      this.getFace(0, i).setRow(
+        rowIndex,
+        this.getFace(0, i - 1).getRow(rowIndex),
+        "right"
+      );
 
-    this.getFace(0, 0).setRow(rowIndex, lastFaceRowData)
+    this.getFace(0, 0).setRow(
+      rowIndex,
+      lastFaceRowData,
+      "right"
+    )
 
     if (rowIndex === 0) {
       this.getFace(3, 0).rotateCounterClockwise();
@@ -339,9 +360,17 @@ class Board extends React.Component {
     let firstFaceRowData = this.getFace(0, 0).getRow(rowIndex);
 
     for (let i = 3; i >= 1; i--)
-      this.getFace(0, i - 1).setRow(rowIndex, this.getFace(0, i).getRow(rowIndex));
+      this.getFace(0, i - 1).setRow(
+        rowIndex,
+        this.getFace(0, i).getRow(rowIndex),
+        "left"
+      );
 
-    this.getFace(0, 3).setRow(rowIndex, firstFaceRowData);
+    this.getFace(0, 3).setRow(
+      rowIndex,
+      firstFaceRowData,
+      "left"
+    );
 
     if (rowIndex === 0) {
       this.getFace(3, 0).rotateClockwise();
@@ -354,9 +383,17 @@ class Board extends React.Component {
     let firstFaceColData = this.getFace(0, 0).getCol(colIndex);
 
     for (let i = 3; i >= 1; i--)
-      this.getFace(i - 1, 0).setCol(colIndex, this.getFace(i, 0).getCol(colIndex));
+      this.getFace(i - 1, 0).setCol(
+        colIndex,
+        this.getFace(i, 0).getCol(colIndex),
+        "up"
+      );
 
-    this.getFace(3, 0).setCol(colIndex, firstFaceColData);
+    this.getFace(3, 0).setCol(
+      colIndex,
+      firstFaceColData,
+      "up"
+    );
 
     if (colIndex === 0) {
       this.getFace(0, 3).rotateCounterClockwise();
@@ -369,9 +406,17 @@ class Board extends React.Component {
     let lastFaceColData = this.getFace(3, 0).getCol(colIndex);
 
     for (let i = 1; i <= 3; i++)
-      this.getFace(i, 0).setCol(colIndex, this.getFace(i - 1, 0).getCol(colIndex));
+      this.getFace(i, 0).setCol(
+        colIndex,
+        this.getFace(i - 1, 0).getCol(colIndex),
+        "down"
+      );
 
-    this.getFace(0, 0).setCol(colIndex, lastFaceColData);
+    this.getFace(0, 0).setCol(
+      colIndex,
+      lastFaceColData,
+      "down"
+    );
 
     if (colIndex === 0) {
       this.getFace(0, 3).rotateClockwise();
@@ -384,19 +429,15 @@ class Board extends React.Component {
     console.log("clickCenterFace", rowIndex, colIndex);
   }
   clickTopFace(rowIndex: number, colIndex: number) {
-    console.log("clickTopFace", rowIndex, colIndex);
     this.rotateColUp(colIndex);
   }
   clickBottomFace(rowIndex: number, colIndex: number) {
-    console.log("clickBottomFace", rowIndex, colIndex);
     this.rotateColDown(colIndex);
   }
   clickLeftFace(rowIndex: number, colIndex: number) {
-    console.log("clickLeftFace", rowIndex, colIndex);
     this.rotateRowLeft(rowIndex);
   }
   clickRightFace(rowIndex: number, colIndex: number) {
-    console.log("clickRightFace", rowIndex, colIndex);
     this.rotateRowRight(rowIndex);
   }
 
@@ -428,7 +469,7 @@ class Board extends React.Component {
         <Face
           value={ 3 }
           ref={ this.getFaceRef(1, 0) }
-          tilt="up"
+          tilt="down"
           onTileClick={ this.clickBottomFace.bind(this) }
         />
         <Face
@@ -439,7 +480,7 @@ class Board extends React.Component {
         <Face
           value={ 5 }
           ref={ this.getFaceRef(3, 0) }
-          tilt="down"
+          tilt="up"
           onTileClick={ this.clickTopFace.bind(this) }
         />
       </div>
