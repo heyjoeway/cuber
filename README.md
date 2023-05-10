@@ -1,4 +1,4 @@
-🧼# Cuber
+# Cuber
 
 Non-copyright infringing digital recreation Ernő Rubik's "Magic Cube" :smirk:
 
