@@ -22,7 +22,7 @@ class KeyHints extends React.Component {
     }
 
     renderVertKeyHints(): React.ReactNode { return (
-        <div className="game-keyhints-vert" style={{ opacity: this.state.mode == "vert" ? 1 : 0 }}>
+        <div className="game-keyhints-vert" style={{ opacity: this.state.mode === "vert" ? 1 : 0 }}>
             <div className="game-keyhint top-left"> 7 </div>
             <div className="game-keyhint top-mid"> 8 </div>
             <div className="game-keyhint top-right"> 9 </div>
@@ -34,7 +34,7 @@ class KeyHints extends React.Component {
     ); }
 
     renderHorizKeyHints(): React.ReactNode { return (
-        <div className="game-keyhints-horiz" style={{ opacity: this.state.mode == "horiz" ? 1 : 0 }}>
+        <div className="game-keyhints-horiz" style={{ opacity: this.state.mode === "horiz" ? 1 : 0 }}>
             <div className="game-keyhint top-left"> 7 </div>
             <div className="game-keyhint mid-left"> 4 </div>
             <div className="game-keyhint bottom-left"> 1 </div>

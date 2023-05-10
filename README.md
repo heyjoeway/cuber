@@ -1,6 +1,6 @@
 # Cuber
 
-Non-copyright infringing digital recreation Ernő Rubik's "Magic Cube" :smirk:
+Non-copyright infringing digital recreation of Ernő Rubik's "Magic Cube" :smirk:
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 

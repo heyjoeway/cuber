@@ -164,21 +164,21 @@ class Board extends React.Component {
     }
     onKeyDown(key: string) {
         if (this._keyHandler.current?.isKeyDown("z")) {
-            if (key == "7") this.rotateRowLeft(0);
-            if (key == "4") this.rotateRowLeft(1);
-            if (key == "1") this.rotateRowLeft(2);
+            if (key === "7") this.rotateRowLeft(0);
+            if (key === "4") this.rotateRowLeft(1);
+            if (key === "1") this.rotateRowLeft(2);
 
-            if (key == "9") this.rotateRowRight(0);
-            if (key == "6") this.rotateRowRight(1);
-            if (key == "3") this.rotateRowRight(2);
+            if (key === "9") this.rotateRowRight(0);
+            if (key === "6") this.rotateRowRight(1);
+            if (key === "3") this.rotateRowRight(2);
         } else if (this._keyHandler.current?.isKeyDown("x")) {
-            if (key == "7") this.rotateColUp(0);
-            if (key == "8") this.rotateColUp(1);
-            if (key == "9") this.rotateColUp(2);
+            if (key === "7") this.rotateColUp(0);
+            if (key === "8") this.rotateColUp(1);
+            if (key === "9") this.rotateColUp(2);
 
-            if (key == "1") this.rotateColDown(0);
-            if (key == "2") this.rotateColDown(1);
-            if (key == "3") this.rotateColDown(2);
+            if (key === "1") this.rotateColDown(0);
+            if (key === "2") this.rotateColDown(1);
+            if (key === "3") this.rotateColDown(2);
         }
 
         console.log("onKeyDown", key);
