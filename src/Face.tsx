@@ -39,8 +39,9 @@ interface FaceState {
 interface FaceProps {
     value?: number;
     visible?: boolean;
-    tilt?: "none" | "left" | "right" | "up" | "down" | "test1" | "test2";
+    tilt?: "none" | "left" | "right" | "up" | "down" | "behind" | "test2";
     onTileClick?: (rowIndex: number, colIndex: number) => void;
+    onUpdate?: () => void;
 }
 
 class Face extends React.Component {
@@ -252,6 +253,13 @@ class Face extends React.Component {
                 {this.renderFace()}
             </React.Fragment>
         );
+    }
+
+    componentDidUpdate(prevProps: Readonly<{}>, prevState: Readonly<{}>, snapshot?: any): void {
+        if (this.props.onUpdate === undefined)
+            return;
+        
+        this.props.onUpdate();
     }
 }
 

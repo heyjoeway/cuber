@@ -8,9 +8,9 @@
     width: 33.33333333%;
     height: 100%;
     background-color: #eee;
-    border: 8px solid black;
     box-sizing: border-box;
     display: inline-block;
+    transform: scale(0.9);
 }
 
 .game-row {
@@ -146,10 +146,12 @@
     // Tilt up from edge
     @keyframes anim-tilt-down-up {
         0% {
-            transform: translateX(-50%) translateY(-50%) rotateX(-90deg);
+            opacity: 0;
+            transform: translateX(-50%) translateY(-50%) rotateX(calc(-2 * var(--game-tilt-deg))); // -90
         }
 
-        1000% {
+        100% {
+            opacity: 1;
             transform: translateX(-50%) translateY(-50%) rotateX(calc(-1 * var(--game-tilt-deg)));
         }
     }
@@ -209,10 +211,12 @@
     // Tilt down from edge
     @keyframes anim-tilt-up-down {
         0% {
-            transform: translateX(-50%) translateY(-50%) rotateX(90deg);
+            opacity: 0;
+            transform: translateX(-50%) translateY(-50%) rotateX(calc(2 * var(--game-tilt-deg))) // 90;
         }
 
         100% {
+            opacity: 1;
             transform: translateX(-50%) translateY(-50%) rotateX(var(--game-tilt-deg));
         }
     }
@@ -272,10 +276,12 @@
     // Tilt right from edge
     @keyframes anim-tilt-left-right {
         0% {
-            transform: translateX(-50%) translateY(-50%) rotateY(-90deg);
+            opacity: 0;
+            transform: translateX(-50%) translateY(-50%) rotateY(calc(-2 * var(--game-tilt-deg))); // -90
         }
 
         100% {
+            opacity: 1;
             transform: translateX(-50%) translateY(-50%) rotateY(calc(-1 * var(--game-tilt-deg)));
         }
     }
@@ -335,10 +341,12 @@
     // Tilt left from edge
     @keyframes anim-tilt-right-left {
         0% {
-            transform: translateX(-50%) translateY(-50%) rotateY(90deg);
+            opacity: 0;
+            transform: translateX(-50%) translateY(-50%) rotateY(calc(2 * var(--game-tilt-deg))) // 90;
         }
 
         100% {
+            opacity: 1;
             transform: translateX(-50%) translateY(-50%) rotateY(var(--game-tilt-deg));
         }
     }
@@ -368,16 +376,80 @@
 
 }
 
+.tilt-behind {
+    opacity: 0;
+    pointer-events: none;
+    z-index: -9999 !important;
+
+    @keyframes anim-tilt-behind-right {
+        0% {
+            opacity: 1;
+            transform: translateX(-50%) translateY(-50%) rotateY(var(--game-tilt-deg));
+        }
+        
+        100% {
+            opacity: 0;
+            transform: translateX(-50%) translateY(-50%) rotateY(calc(2 * var(--game-tilt-deg)));
+        }
+    }
+    @keyframes anim-tilt-behind-left {
+        0% {
+            opacity: 1;
+            transform: translateX(-50%) translateY(-50%) rotateY(calc(-1 * var(--game-tilt-deg)));
+        }
+        
+        100% {
+            opacity: 0;
+            transform: translateX(-50%) translateY(-50%) rotateY(calc(-2 * var(--game-tilt-deg)));
+        }
+    }
+    @keyframes anim-tilt-behind-up {
+        0% {
+            opacity: 1;
+            transform: translateX(-50%) translateY(-50%) rotateX(var(--game-tilt-deg));
+        }
+        
+        100% {
+            opacity: 0;
+            transform: translateX(-50%) translateY(-50%) rotateX(calc(2 * var(--game-tilt-deg)));
+        }        
+    }
+    @keyframes anim-tilt-behind-down {
+        0% {
+            opacity: 1;
+            transform: translateX(-50%) translateY(-50%) rotateX(calc(-1 * var(--game-tilt-deg)));
+        }
+        
+        100% {
+            opacity: 0;
+            transform: translateX(-50%) translateY(-50%) rotateX(calc(-2 * var(--game-tilt-deg)));
+        }        
+    }
+    
+    &.anim-right {
+        animation-name: anim-tilt-behind-right;
+    }
+    &.anim-left {
+        animation-name: anim-tilt-behind-left;
+    }
+    &.anim-up {
+        animation-name: anim-tilt-behind-up;
+    }
+    &.anim-down {
+        animation-name: anim-tilt-behind-down;
+    }
+}
+
 .game-tile {
     position: relative;
     overflow: hidden;
     &::after {
         font-weight: bold;
         font-family: sans-serif;
-        font-size: 128px;
+        font-size: 156px;
         display: block;
         position: absolute;
-        top: -48px;
+        top: -59px;
         left: -4px;
     }
 }

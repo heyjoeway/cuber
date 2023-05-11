@@ -204,7 +204,7 @@ class Board extends React.Component {
                 <FaceRef
                     ref={(this.getFaceRef(0, 2) as React.RefObject<FaceRef>)}
                     faceRef={this.getFaceRef(2, 0)}
-                    visible={false}
+                    tilt="behind"
                 />
                 <Face
                     value={2}
@@ -222,6 +222,7 @@ class Board extends React.Component {
                     value={4}
                     ref={this.getFaceRef(2, 0)}
                     tilt="test2"
+                    onUpdate={ () => (this.getFaceRef(0, 2) as React.RefObject<FaceRef>)?.current?.refresh() }
                 />
                 <Face
                     value={5}
