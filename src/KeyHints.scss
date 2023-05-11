@@ -11,6 +11,8 @@
     font-size: 64px;
     -webkit-text-stroke: 4px black;
     filter: drop-shadow(0 0 8px white);
+
+    pointer-events: none;
 }
 
 .game-keyhints-horiz {
