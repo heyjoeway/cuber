@@ -9,7 +9,7 @@ interface TileProps {
 }
 
 function Tile(props: TileProps): JSX.Element {
-    let colors = ["red", "green", "blue", "orange", "yellow", "purple"];
+    let colors = ['#d21972', '#648FFF', '#502deb', '#ff4d00', '#FFFFFF', '#FFB000'];
     let color = colors[props.colorID];
     return (
         <div
