@@ -7,13 +7,21 @@ import KeyHandler from "./KeyHandler";
 import KeyHints from "./KeyHints";
 
 interface BoardProps { }
+interface BoardState {
+    splay: number;
+}
 
 class Board extends React.Component {
+    state: BoardState;
+    props!: BoardProps;
+
     _board: (React.RefObject<Face> | null)[][];
     _keyHandler: React.RefObject<KeyHandler>;
 
     constructor(props: BoardProps) {
         super(props);
+
+        this.state = { splay: 60 };
 
         let faceRefs = [
             React.createRef<Face>(),
@@ -186,10 +194,22 @@ class Board extends React.Component {
     onKeyUp(key: string) {
         console.log("onKeyUp", key);
     }
+
+    set splay(value: number) {
+        this.setState({ splay: value });
+    }
     
     render(): JSX.Element {
+        // 22876x-1.132
+        const style = {
+            "--game-tilt-deg": `${this.state.splay}deg`,
+            "--game-tilt-origin-z": `${-22876 * Math.pow(this.state.splay, -1.132)}px`,
+        } as React.CSSProperties;
         return (
-            <div className="game-container">
+            <div
+                className="game-container"
+                style={style}
+            >
                 <Face
                     value={0}
                     ref={this.getFaceRef(0, 0)}
