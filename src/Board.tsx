@@ -16,7 +16,6 @@ class Board extends React.Component {
     props!: BoardProps;
 
     _board: (React.RefObject<Face> | null)[][];
-    _keyHandler: React.RefObject<KeyHandler>;
 
     constructor(props: BoardProps) {
         super(props);
@@ -39,8 +38,6 @@ class Board extends React.Component {
             [faceRefs[5], null, null, null],
             [faceRefs[6], null, null, null]
         ];
-        
-        this._keyHandler = React.createRef<KeyHandler>();
     }
 
     getFaceRef(y: number, x: number): React.RefObject<Face> {
@@ -170,8 +167,8 @@ class Board extends React.Component {
     clickRightFace(rowIndex: number, colIndex: number) {
         this.rotateRowRight(rowIndex);
     }
-    onKeyDown(key: string) {
-        if (this._keyHandler.current?.isKeyDown("z")) {
+    onKeyDown(key: string, handler: KeyHandler) {
+        if (handler.isKeyDown("z")) {
             if (key === "7") this.rotateRowLeft(0);
             if (key === "4") this.rotateRowLeft(1);
             if (key === "1") this.rotateRowLeft(2);
@@ -179,7 +176,7 @@ class Board extends React.Component {
             if (key === "9") this.rotateRowRight(0);
             if (key === "6") this.rotateRowRight(1);
             if (key === "3") this.rotateRowRight(2);
-        } else if (this._keyHandler.current?.isKeyDown("x")) {
+        } else if (handler.isKeyDown("x")) {
             if (key === "7") this.rotateColUp(0);
             if (key === "8") this.rotateColUp(1);
             if (key === "9") this.rotateColUp(2);
@@ -191,16 +188,15 @@ class Board extends React.Component {
 
         console.log("onKeyDown", key);
     }
-    onKeyUp(key: string) {
+    onKeyUp(key: string, handler: KeyHandler) {
         console.log("onKeyUp", key);
     }
 
     set splay(value: number) {
         this.setState({ splay: value });
     }
-    
+
     render(): JSX.Element {
-        // 22876x-1.132
         const style = {
             "--game-tilt-deg": `${this.state.splay}deg`,
             "--game-tilt-origin-z": `${-22876 * Math.pow(this.state.splay, -1.132)}px`,
@@ -251,7 +247,6 @@ class Board extends React.Component {
                     onTileClick={this.clickTopFace.bind(this)}
                 />
                 <KeyHandler
-                    ref={ this._keyHandler }
                     onKeyDown={ this.onKeyDown.bind(this) }
                     onKeyUp={ this.onKeyUp.bind(this) }
                 />

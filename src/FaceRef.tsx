@@ -27,7 +27,6 @@ class FaceRef extends Face {
             return; // ignore
 
         this.setState(this.props.faceRef.current.state);
-        console.log("FaceRef.refresh: this.state = ", structuredClone(this.state));
     }
 
     componentDidMount(): void {

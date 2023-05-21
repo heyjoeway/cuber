@@ -1,8 +1,8 @@
 import React from "react";
 
 interface KeyHandlerProps {
-    onKeyDown: (key: string) => void;
-    onKeyUp: (key: string) => void;
+    onKeyDown: (key: string, handler: KeyHandler) => void;
+    onKeyUp: (key: string, handler: KeyHandler) => void;
 }
 
 
@@ -49,12 +49,12 @@ class KeyHandler extends React.Component {
             return;
 
         this._keysHeld.add(event.key);
-        this.props.onKeyDown(event.key);
+        this.props.onKeyDown(event.key, this);
     }
     
     _handleKeyUp(event: KeyboardEvent): void {
         this._keysHeld.delete(event.key);
-        this.props.onKeyUp(event.key);
+        this.props.onKeyUp(event.key, this);
     }
 
     render(): React.ReactNode {

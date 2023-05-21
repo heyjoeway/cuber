@@ -6,19 +6,24 @@ interface TileProps {
     colorID: number;
     onClick?: () => void;
     visible?: boolean;
+    x: number;
+    y: number;
 }
 
-function Tile(props: TileProps): JSX.Element {
-    return (
-        <div
-            onClick={props.onClick}
-            style={{
-                opacity: props.visible ? 1 : 0
-            }}
-            className={ `game-tile game-tile-color-${props.colorID}` }
-        >
-        </div>
-    );
+class Tile extends React.Component {
+    props!: TileProps;
+
+    render() {
+        return (
+            <div
+                onClick={this.props.onClick}
+                style={{
+                    opacity: this.props.visible ? 1 : 0
+                }}
+                className={ `game-tile game-tile-color-${this.props.colorID}` }
+            />
+        );
+    }
 }
 
 function Row({ children }: { children: React.ReactNode }): JSX.Element {
@@ -100,8 +105,7 @@ class Face extends React.Component {
     }
 
     _handleTileClick(rowIndex: number, colIndex: number): void {
-        if (this.props.onTileClick)
-            this.props.onTileClick(rowIndex, colIndex);
+        this.props.onTileClick?.(rowIndex, colIndex);
     }
 
     getRow(rowIndex: number): number[] {
@@ -190,6 +194,8 @@ class Face extends React.Component {
                 rowContents.push(
                     <Tile
                         key={`${y}-${x}`}
+                        x={x}
+                        y={y}
                         onClick={() => this._handleTileClick(y, x)}
                         colorID={this.state.face[y][x]}
                         visible={!this.state.faceChangedPrev[y][x]}
@@ -224,6 +230,8 @@ class Face extends React.Component {
                 rowContents.push(
                     <Tile
                         key={`${y}-${x}`}
+                        x={x}
+                        y={y}
                         colorID={this.state.face[y][x]}
                         visible={this.state.faceChangedPrev[y][x]}
                     />

@@ -1,7 +1,7 @@
 :root {
     --game-tilt-deg: 60deg;
     --game-tilt-origin-z: -170px;
-    --game-anim-time: 0.15s;
+    --game-anim-time: 0.5s;
 }
 
 .game-tile {
@@ -31,6 +31,7 @@
     transform-origin: 50% 50% var(--game-tilt-origin-z);
     animation-fill-mode: forwards;
     animation-duration: var(--game-anim-time);
+    animation-timing-function:cubic-bezier(0.075, 0.82, 0.165, 1);
     box-sizing: border-box;
 }
 
@@ -445,7 +446,7 @@
     overflow: hidden;
     &::after {
         font-weight: bold;
-        font-family: sans-serif;
+        font-family: "Arial";
         font-size: 156px;
         display: block;
         position: absolute;
