@@ -1,22 +1,70 @@
+<script lang="ts">
+	import { createEventDispatcher } from 'svelte';
+
+    import Row from "./Row.svelte";
+    import Tile from "./Tile.svelte";
+    import { FaceState, Tilt } from "./FaceState";
+
+    export let visible: boolean = true;
+    export let tilt: Tilt = Tilt.None;
+    export let state: FaceState;
+
+    const dispatch = createEventDispatcher();
+    
+    let { _tiles, faceChangedPrev, _animation, keyIncrement } = state;
+</script>
+
+<slot state={state} />
+
+{#if visible}
+    {#key $keyIncrement}
+        <div
+            class="game-face game-face-anim tilt-{tilt.toString()} anim-{$_animation.toString()}"
+            style="pointerEvents:none"
+        >
+            {#each {length: 3} as _, y}
+                {#key y}
+                    <Row>
+                        {#each {length: 3} as _, x}
+                            {#key x}
+                                <Tile
+                                    colorID={$_tiles[y][x]}
+                                    visible={$faceChangedPrev[y][x]}
+                                />
+                            {/key}
+                        {/each}
+                    </Row>
+                {/key}
+            {/each}
+        </div>
+
+        <div
+            class="game-face tilt-{tilt.toString()}"
+            style="pointerEvents:none"
+        >
+            {#each {length: 3} as _, y}
+                {#key y}
+                    <Row>
+                        {#each {length: 3} as _, x}
+                            {#key x}
+                                <Tile
+                                    colorID={$_tiles[y][x]}
+                                    visible={!$faceChangedPrev[y][x]}
+                                    on:click={() => dispatch('faceClick', { rowIndex: y, colIndex: x })}
+                                />
+                            {/key}
+                        {/each}
+                    </Row>
+                {/key}
+            {/each}
+        </div>
+    {/key}
+{/if}
+
+<style lang="scss">
+
 :root {
-    --game-tilt-deg: 60deg;
-    --game-tilt-origin-z: -170px;
     --game-anim-time: 0.5s;
-}
-
-.game-tile {
-    width: 33.33333333%;
-    height: 100%;
-    background-color: #eee;
-    box-sizing: border-box;
-    display: inline-block;
-    transform: scale(0.9);
-}
-
-.game-row {
-    width: 100%;
-    height: 33.33333333%;
-    display: block;
 }
 
 .game-face {
@@ -440,65 +488,4 @@
         animation-name: anim-tilt-behind-down;
     }
 }
-
-.game-tile {
-    position: relative;
-    overflow: hidden;
-    &::after {
-        font-weight: bold;
-        font-family: "Arial";
-        font-size: 156px;
-        display: block;
-        position: absolute;
-        top: -59px;
-        left: -4px;
-    }
-}
-
-.game-tile-color-0 {
-    background-color: #d21972;
-    &::after {
-        color: #b20157;
-        content: "⚀";
-    }
-}
-
-.game-tile-color-1 {
-    background-color: #648FFF;
-    &::after {
-        color: #3b72ff;
-        content: "⚁";
-    }
-}
-
-.game-tile-color-2 {
-    background-color: #502deb;
-    &::after {
-        color: #380fea;
-        content: "⚂";
-    }
-}
-
-.game-tile-color-3 {
-    background-color: #ff4d00;
-    &::after {
-        color: #dc4200;
-        content: "⚃";
-    }
-}
-
-.game-tile-color-4 {
-    background-color: #FFFFFF;
-    &::after {
-        color: #dedede;
-        content: "⚄";
-    }
-}
-
-.game-tile-color-5 {
-    background-color: #FFB000;
-    &::after {
-        color: #da8e00;
-        content: "⚅";
-    }
-}
+</style>
