@@ -5,7 +5,6 @@
         Tilt as FaceTilt,
         Animation as FaceAnimation
     } from "./FaceState";
-    import type { FaceClickEvent } from "./FaceState";
     import KeyHints from "./KeyHints.svelte";
     import KeyHandler from "./KeyHandler.svelte";
 
@@ -133,28 +132,19 @@
         }
     }
 
-    function processClickEvent(e: CustomEvent) {
-        return e as unknown as FaceClickEvent;
-    }
-
-    function clickCenterFace(e: FaceClickEvent) {
-        const { rowIndex, colIndex } = e.detail;
+    function clickCenterFace(rowIndex: number, colIndex: number) {
         console.log("clickCenterFace", rowIndex, colIndex);
     }
-    function clickTopFace(e: FaceClickEvent) {
-        const { rowIndex, colIndex } = e.detail;
+    function clickTopFace(rowIndex: number, colIndex: number) {
         rotateColUp(colIndex);
     }
-    function clickBottomFace(e: FaceClickEvent) {
-        const { rowIndex, colIndex } = e.detail;
+    function clickBottomFace(rowIndex: number, colIndex: number) {
         rotateColDown(colIndex);
     }
-    function clickLeftFace(e: FaceClickEvent) {
-        const { rowIndex, colIndex } = e.detail;
+    function clickLeftFace(rowIndex: number, colIndex: number) {
         rotateRowLeft(rowIndex);
     }
-    function clickRightFace(e: FaceClickEvent) {
-        const { rowIndex, colIndex } = e.detail;
+    function clickRightFace(rowIndex: number, colIndex: number) {
         rotateRowRight(rowIndex);
     }
 
@@ -201,12 +191,12 @@
 <div class="game-container" style={cssVarStyles}>
     <Face
         state={faceStates[0]}
-        on:faceClick={ e => clickCenterFace(processClickEvent(e)) }
+        onFaceClick={clickCenterFace}
         />
     <Face
         state={faceStates[1]}
         tilt={FaceTilt.Right}
-        on:faceClick={ e => clickRightFace(processClickEvent(e)) }
+        onFaceClick={clickRightFace}
     />
     <Face
         state={faceStates[2]}
@@ -215,7 +205,7 @@
     <Face
         state={faceStates[3]}
         tilt={FaceTilt.Left}
-        on:faceClick={ e => clickLeftFace(processClickEvent(e)) }
+        onFaceClick={clickLeftFace}
     />
     <Face
         state={faceStates[2]}
@@ -224,12 +214,12 @@
     <Face
         state={faceStates[4]}
         tilt={FaceTilt.Down}
-        on:faceClick={ e => clickBottomFace(processClickEvent(e)) }
+        onFaceClick={clickBottomFace}
     />
     <Face
         state={faceStates[5]}
         tilt={FaceTilt.Up}
-        on:faceClick={ e => clickTopFace(processClickEvent(e)) }
+        onFaceClick={clickTopFace}
     />
     <KeyHints />
 </div>

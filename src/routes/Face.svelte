@@ -8,9 +8,17 @@
     export let visible: boolean = true;
     export let tilt: Tilt = Tilt.None;
     export let state: FaceState;
+    export let onFaceClick: (
+        rowIndex: number,
+        colIndex: number
+    ) => void = () => {};
+    export let onFaceMouseDown: (
+        rowIndex: number,
+        colIndex: number,
+        clientX: number,
+        clientY: number
+    ) => void = () => {};
 
-    const dispatch = createEventDispatcher();
-    
     let { _tiles, faceChangedPrev, _animation, keyIncrement } = state;
 </script>
 
@@ -50,7 +58,8 @@
                                 <Tile
                                     colorID={$_tiles[y][x]}
                                     visible={!$faceChangedPrev[y][x]}
-                                    on:click={() => dispatch('faceClick', { rowIndex: y, colIndex: x })}
+                                    on:click={ () => onFaceClick(y, x) }
+                                    on:mousedown={ e => onFaceMouseDown(y, x, e.clientX, e.clientY) }
                                 />
                             {/key}
                         {/each}

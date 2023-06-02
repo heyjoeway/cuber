@@ -11,6 +11,8 @@
     style={style}
     class={classes}
     on:click
+    on:mousedown
+    on:mouseup
 />
 
 <style lang="scss">

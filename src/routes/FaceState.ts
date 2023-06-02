@@ -1,10 +1,5 @@
 import { writable, get } from 'svelte/store';
 
-interface FaceClickEvent extends CustomEvent {
-    rowIndex: number;
-    colIndex: number;
-}
-
 enum Tilt {
     None = "none",
     Left = "left",
@@ -147,4 +142,3 @@ class FaceState {
 }
 
 export { FaceState, Tilt, Animation };
-export type { FaceClickEvent };
