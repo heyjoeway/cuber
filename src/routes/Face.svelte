@@ -38,6 +38,7 @@
                                 <Tile
                                     colorID={$_tiles[y][x]}
                                     visible={$faceChangedPrev[y][x]}
+                                    x={x} y={y}
                                 />
                             {/key}
                         {/each}
@@ -55,11 +56,13 @@
                     <Row>
                         {#each {length: 3} as _, x}
                             {#key x}
+                            <!-- on:touchstart={ e => onFaceMouseDown(y, x, e.touches[0].clientX, e.touches[0].clientY) } -->
                                 <Tile
                                     colorID={$_tiles[y][x]}
                                     visible={!$faceChangedPrev[y][x]}
                                     on:click={ () => onFaceClick(y, x) }
                                     on:mousedown={ e => onFaceMouseDown(y, x, e.clientX, e.clientY) }
+                                    x={x} y={y}
                                 />
                             {/key}
                         {/each}
@@ -71,10 +74,6 @@
 {/if}
 
 <style lang="scss">
-
-:root {
-    --game-anim-time: 0.5s;
-}
 
 .game-face {
     width: 256px;
@@ -88,7 +87,7 @@
     transform-origin: 50% 50% var(--game-tilt-origin-z);
     animation-fill-mode: forwards;
     animation-duration: var(--game-anim-time);
-    animation-timing-function:cubic-bezier(0.075, 0.82, 0.165, 1);
+    animation-timing-function: cubic-bezier(0.075, 0.82, 0.165, 1);
     box-sizing: border-box;
 }
 
@@ -110,124 +109,41 @@
 }
 
 .tilt-none {
-    @keyframes anim-tilt-none-left {
-        0% {
-            transform: translateX(-50%) translateY(-50%) rotateY(var(--game-tilt-deg));
-        }
-
-        100% {
-            transform: translateX(-50%) translateY(-50%) rotateX(0deg) rotateY(0deg);
-        }
-    }
-
-    @keyframes anim-tilt-none-right {
-        0% {
-            transform: translateX(-50%) translateY(-50%) rotateY(calc(-1 * var(--game-tilt-deg)));
-        }
-
-        100% {
-            transform: translateX(-50%) translateY(-50%) rotateX(0deg) rotateY(0deg);
-        }
-    }
-
-    @keyframes anim-tilt-none-up {
-        0% {
-            transform: translateX(-50%) translateY(-50%) rotateX(calc(-1 * var(--game-tilt-deg)));
-        }
-
-        100% {
-            transform: translateX(-50%) translateY(-50%) rotateX(0deg) rotateY(0deg);
-        }
-    }
-
-    @keyframes anim-tilt-none-down {
-        0% {
-            transform: translateX(-50%) translateY(-50%) rotateX(var(--game-tilt-deg));
-        }
-
-        100% {
-            transform: translateX(-50%) translateY(-50%) rotateX(0deg) rotateY(0deg);
-        }
-    }
-
     &.anim-left {
-        animation-name: anim-tilt-none-left;
+        transform: translateX(-50%) translateY(-50%) rotateY(calc(var(--game-tilt-deg) * var(--game-anim-progress-inv)));
     }
 
     &.anim-right {
-        animation-name: anim-tilt-none-right;
+        transform: translateX(-50%) translateY(-50%) rotateY(calc(-1 * var(--game-tilt-deg) * var(--game-anim-progress-inv)));
     }
 
     &.anim-up {
-        animation-name: anim-tilt-none-up;
+        transform: translateX(-50%) translateY(-50%) rotateX(calc(-1 * var(--game-tilt-deg) * var(--game-anim-progress-inv)));
     }
 
     &.anim-down {
-        animation-name: anim-tilt-none-down;
+        transform: translateX(-50%) translateY(-50%) rotateX(calc(var(--game-tilt-deg) * var(--game-anim-progress-inv)));
     }
 
     transform: translateX(-50%) translateY(-50%) rotateX(0deg) rotateY(0deg);
 }
 
-.tilt-down {
-    @keyframes anim-tilt-down-rotate-cw {
-        0% {
-            transform: translateX(-50%) translateY(-50%) rotateX(calc(-1 * var(--game-tilt-deg))) rotateZ(-90deg);
-        }
-
-        100% {
-            transform: translateX(-50%) translateY(-50%) rotateX(calc(-1 * var(--game-tilt-deg))) rotateZ(0deg);
-        }
-    }
-
-    @keyframes anim-tilt-down-rotate-ccw {
-        0% {
-            transform: translateX(-50%) translateY(-50%) rotateX(calc(-1 * var(--game-tilt-deg))) rotateZ(90deg);
-        }
-
-        100% {
-            transform: translateX(-50%) translateY(-50%) rotateX(calc(-1 * var(--game-tilt-deg))) rotateZ(0deg);
-        }
-    }
-
-    // Tilt down from none
-    @keyframes anim-tilt-down-down {
-        0% {
-            transform: translateX(-50%) translateY(-50%) rotateX(0deg) rotateY(0deg);
-        }
-
-        100% {
-            transform: translateX(-50%) translateY(-50%) rotateX(calc(-1 * var(--game-tilt-deg)));
-        }
-    }
-
-    // Tilt up from edge
-    @keyframes anim-tilt-down-up {
-        0% {
-            opacity: 0;
-            transform: translateX(-50%) translateY(-50%) rotateX(calc(-2 * var(--game-tilt-deg))); // -90
-        }
-
-        100% {
-            opacity: 1;
-            transform: translateX(-50%) translateY(-50%) rotateX(calc(-1 * var(--game-tilt-deg)));
-        }
-    }
-
+.tilt-down {    
     &.anim-rotate-cw {
-        animation-name: anim-tilt-down-rotate-cw;
+        transform: translateX(-50%) translateY(-50%) rotateX(calc(-1 * var(--game-tilt-deg))) rotateZ(calc(-1 * var(--game-anim-progress-inv) * 90deg));
     }
 
     &.anim-rotate-ccw {
-        animation-name: anim-tilt-down-rotate-ccw;
+        transform: translateX(-50%) translateY(-50%) rotateX(calc(-1 * var(--game-tilt-deg))) rotateZ(calc(var(--game-anim-progress-inv) * 90deg));
     }
 
     &.anim-down {
-        animation-name: anim-tilt-down-down;
+        transform: translateX(-50%) translateY(-50%) rotateX(calc(-1 * var(--game-anim-progress) * var(--game-tilt-deg)));
     }
 
     &.anim-up {
-        animation-name: anim-tilt-down-up;
+        opacity: var(--game-anim-progress);
+        transform: translateX(-50%) translateY(-50%) rotateX(calc(-1 * (1 + var(--game-anim-progress-inv)) * var(--game-tilt-deg))); 
         z-index: -9999 !important;
     }
 
@@ -235,64 +151,21 @@
 }
 
 .tilt-up {
-    @keyframes anim-tilt-up-rotate-cw {
-        0% {
-            transform: translateX(-50%) translateY(-50%) rotateX(var(--game-tilt-deg)) rotateZ(-90deg);
-        }
-
-        100% {
-            transform: translateX(-50%) translateY(-50%) rotateX(var(--game-tilt-deg)) rotateZ(0deg);
-        }
-    }
-
-    @keyframes anim-tilt-up-rotate-ccw {
-        0% {
-            transform: translateX(-50%) translateY(-50%) rotateX(var(--game-tilt-deg)) rotateZ(90deg);
-        }
-
-        100% {
-            transform: translateX(-50%) translateY(-50%) rotateX(var(--game-tilt-deg)) rotateZ(0deg);
-        }
-    }
-
-    // Tilt up from none
-    @keyframes anim-tilt-up-up {
-        0% {
-            transform: translateX(-50%) translateY(-50%) rotateX(0deg) rotateY(0deg);
-        }
-
-        100% {
-            transform: translateX(-50%) translateY(-50%) rotateX(var(--game-tilt-deg));
-        }
-    }
-
-    // Tilt down from edge
-    @keyframes anim-tilt-up-down {
-        0% {
-            opacity: 0;
-            transform: translateX(-50%) translateY(-50%) rotateX(calc(2 * var(--game-tilt-deg))) // 90;
-        }
-
-        100% {
-            opacity: 1;
-            transform: translateX(-50%) translateY(-50%) rotateX(var(--game-tilt-deg));
-        }
-    }
-
     &.anim-rotate-cw {
-        animation-name: anim-tilt-up-rotate-cw;
+        transform: translateX(-50%) translateY(-50%) rotateX(var(--game-tilt-deg)) rotateZ(calc(-1 * var(--game-anim-progress-inv) * 90deg));
     }
 
     &.anim-rotate-ccw {
-        animation-name: anim-tilt-up-rotate-ccw;
+        transform: translateX(-50%) translateY(-50%) rotateX(var(--game-tilt-deg)) rotateZ(calc(var(--game-anim-progress-inv) * 90deg));
     }
 
     &.anim-up {
-        animation-name: anim-tilt-up-up;
+        transform: translateX(-50%) translateY(-50%) rotateX(calc(var(--game-tilt-deg) * var(--game-anim-progress)));
     }
 
     &.anim-down {
-        animation-name: anim-tilt-up-down;
+        transform: translateX(-50%) translateY(-50%) rotateX(calc((1 + var(--game-anim-progress-inv)) * var(--game-tilt-deg))); 
+        opacity: var(--game-anim-progress);
         z-index: -9999 !important;
     }
 
@@ -300,64 +173,21 @@
 }
 
 .tilt-left {
-    @keyframes anim-tilt-left-rotate-cw {
-        0% {
-            transform: translateX(-50%) translateY(-50%) rotateY(calc(-1 * var(--game-tilt-deg))) rotateZ(-90deg);
-        }
-
-        100% {
-            transform: translateX(-50%) translateY(-50%) rotateY(calc(-1 * var(--game-tilt-deg))) rotateZ(0deg);
-        }
-    }
-
-    @keyframes anim-tilt-left-rotate-ccw {
-        0% {
-            transform: translateX(-50%) translateY(-50%) rotateY(calc(-1 * var(--game-tilt-deg))) rotateZ(90deg);
-        }
-
-        100% {
-            transform: translateX(-50%) translateY(-50%) rotateY(calc(-1 * var(--game-tilt-deg))) rotateZ(0deg);
-        }
-    }
-
-    // Tilt left from none
-    @keyframes anim-tilt-left-left {
-        0% {
-            transform: translateX(-50%) translateY(-50%) rotateX(0deg) rotateY(0deg);
-        }
-
-        100% {
-            transform: translateX(-50%) translateY(-50%) rotateY(calc(-1 * var(--game-tilt-deg)));
-        }
-    }
-
-    // Tilt right from edge
-    @keyframes anim-tilt-left-right {
-        0% {
-            opacity: 0;
-            transform: translateX(-50%) translateY(-50%) rotateY(calc(-2 * var(--game-tilt-deg))); // -90
-        }
-
-        100% {
-            opacity: 1;
-            transform: translateX(-50%) translateY(-50%) rotateY(calc(-1 * var(--game-tilt-deg)));
-        }
-    }
-
     &.anim-rotate-cw {
-        animation-name: anim-tilt-left-rotate-cw;
+        transform: translateX(-50%) translateY(-50%) rotateY(calc(-1 * var(--game-tilt-deg))) rotateZ(calc(-1 * var(--game-anim-progress-inv) * 90deg));
     }
 
     &.anim-rotate-ccw {
-        animation-name: anim-tilt-left-rotate-ccw;
+        transform: translateX(-50%) translateY(-50%) rotateY(calc(-1 * var(--game-tilt-deg))) rotateZ(calc(var(--game-anim-progress-inv) * 90deg));
     }
 
     &.anim-left {
-        animation-name: anim-tilt-left-left;
+        transform: translateX(-50%) translateY(-50%) rotateY(calc(-1 * var(--game-anim-progress) * var(--game-tilt-deg)));
     }
 
     &.anim-right {
-        animation-name: anim-tilt-left-right;
+        opacity: var(--game-anim-progress);
+        transform: translateX(-50%) translateY(-50%) rotateY(calc(-1 * (1 + var(--game-anim-progress-inv)) * var(--game-tilt-deg)));
         z-index: -9999 !important;
     }
 
@@ -365,64 +195,20 @@
 }
 
 .tilt-right {
-    @keyframes anim-tilt-right-rotate-cw {
-        0% {
-            transform: translateX(-50%) translateY(-50%) rotateY(var(--game-tilt-deg)) rotateZ(-90deg);
-        }
-
-        100% {
-            transform: translateX(-50%) translateY(-50%) rotateY(var(--game-tilt-deg)) rotateZ(0deg);
-        }
-    }
-
-    @keyframes anim-tilt-right-rotate-ccw {
-        0% {
-            transform: translateX(-50%) translateY(-50%) rotateY(var(--game-tilt-deg)) rotateZ(90deg);
-        }
-
-        100% {
-            transform: translateX(-50%) translateY(-50%) rotateY(var(--game-tilt-deg)) rotateZ(0deg);
-        }
-    }
-
-    // Tilt right from none
-    @keyframes anim-tilt-right-right {
-        0% {
-            transform: translateX(-50%) translateY(-50%) rotateX(0deg) rotateY(0deg);
-        }
-
-        100% {
-            transform: translateX(-50%) translateY(-50%) rotateY(var(--game-tilt-deg));
-        }
-    }
-
-    // Tilt left from edge
-    @keyframes anim-tilt-right-left {
-        0% {
-            opacity: 0;
-            transform: translateX(-50%) translateY(-50%) rotateY(calc(2 * var(--game-tilt-deg))) // 90;
-        }
-
-        100% {
-            opacity: 1;
-            transform: translateX(-50%) translateY(-50%) rotateY(var(--game-tilt-deg));
-        }
-    }
-
     &.anim-rotate-cw {
-        animation-name: anim-tilt-right-rotate-cw;
+        transform: translateX(-50%) translateY(-50%) rotateY(var(--game-tilt-deg)) rotateZ(calc(-1 * var(--game-anim-progress-inv) * 90deg));
     }
 
     &.anim-rotate-ccw {
-        animation-name: anim-tilt-right-rotate-ccw;
+        transform: translateX(-50%) translateY(-50%) rotateY(var(--game-tilt-deg)) rotateZ(calc(var(--game-anim-progress-inv) * 90deg));
     }
 
     &.anim-right {
-        animation-name: anim-tilt-right-right;
+        transform: translateX(-50%) translateY(-50%) rotateY(calc(var(--game-anim-progress) * var(--game-tilt-deg)));
     }
 
     &.anim-left {
-        animation-name: anim-tilt-right-left;
+        transform: translateX(-50%) translateY(-50%) rotateY(calc((1 + var(--game-anim-progress-inv)) * var(--game-tilt-deg)));
         z-index: -9999 !important;
     }
 
@@ -431,7 +217,6 @@
 
 .tilt-test2 {
     transform: translateX(50%) translateY(-150%) scale(70%);
-
 }
 
 .tilt-behind {
@@ -439,62 +224,21 @@
     pointer-events: none;
     z-index: -9999 !important;
 
-    @keyframes anim-tilt-behind-right {
-        0% {
-            opacity: 1;
-            transform: translateX(-50%) translateY(-50%) rotateY(var(--game-tilt-deg));
-        }
-        
-        100% {
-            opacity: 0;
-            transform: translateX(-50%) translateY(-50%) rotateY(calc(2 * var(--game-tilt-deg)));
-        }
-    }
-    @keyframes anim-tilt-behind-left {
-        0% {
-            opacity: 1;
-            transform: translateX(-50%) translateY(-50%) rotateY(calc(-1 * var(--game-tilt-deg)));
-        }
-        
-        100% {
-            opacity: 0;
-            transform: translateX(-50%) translateY(-50%) rotateY(calc(-2 * var(--game-tilt-deg)));
-        }
-    }
-    @keyframes anim-tilt-behind-up {
-        0% {
-            opacity: 1;
-            transform: translateX(-50%) translateY(-50%) rotateX(var(--game-tilt-deg));
-        }
-        
-        100% {
-            opacity: 0;
-            transform: translateX(-50%) translateY(-50%) rotateX(calc(2 * var(--game-tilt-deg)));
-        }        
-    }
-    @keyframes anim-tilt-behind-down {
-        0% {
-            opacity: 1;
-            transform: translateX(-50%) translateY(-50%) rotateX(calc(-1 * var(--game-tilt-deg)));
-        }
-        
-        100% {
-            opacity: 0;
-            transform: translateX(-50%) translateY(-50%) rotateX(calc(-2 * var(--game-tilt-deg)));
-        }        
-    }
-    
     &.anim-right {
-        animation-name: anim-tilt-behind-right;
+        opacity: var(--game-anim-progress-inv);
+        transform: translateX(-50%) translateY(-50%) rotateY(calc((1 + var(--game-anim-progress)) * var(--game-tilt-deg)));
     }
     &.anim-left {
-        animation-name: anim-tilt-behind-left;
+        opacity: var(--game-anim-progress-inv);
+        transform: translateX(-50%) translateY(-50%) rotateY(calc(-1 * (1 + var(--game-anim-progress)) * var(--game-tilt-deg)));
     }
     &.anim-up {
-        animation-name: anim-tilt-behind-up;
+        opacity: var(--game-anim-progress-inv);
+        transform: translateX(-50%) translateY(-50%) rotateX(calc((1 + var(--game-anim-progress)) * var(--game-tilt-deg)));
     }
     &.anim-down {
-        animation-name: anim-tilt-behind-down;
+        opacity: var(--game-anim-progress-inv);
+        transform: translateX(-50%) translateY(-50%) rotateX(calc(-1 * (1 + var(--game-anim-progress)) * var(--game-tilt-deg)));
     }
 }
 </style>

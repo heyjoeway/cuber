@@ -7,6 +7,51 @@
     } from "./FaceState";
     import KeyHints from "./KeyHints.svelte";
     import KeyHandler from "./KeyHandler.svelte";
+    import { onMount } from "svelte";
+    import {
+        HistoryNumberVar,
+        absCap,
+        noNaN
+    } from "./Utils";
+
+    let animProgress = 1;
+    let animProgressVisual = animProgress;
+    let animSpeed = 0;
+
+    onMount(() => {
+        setInterval(() => {
+            if ([DragMode.Inactive, DragMode.Free].includes(dragMode)) {
+                let movingSlowly = Math.abs(animSpeed) < 0.006125;
+                let closeToDone = Math.abs(1 - animProgress) < 0.01;
+                if (movingSlowly && closeToDone) {
+                    animSpeed = 0;
+                    animProgress = 1;
+                } else {
+                    let fac = 0.25;
+                    if (animProgress < 1) {
+                        animSpeed += 0.02 * fac;
+                    } else {
+                        animSpeed -= 0.01 * fac;
+                    }
+                    animSpeed *= 0.9;
+                    animProgress += animSpeed;
+                }
+            } else {
+                animSpeed = absCap(
+                    noNaN(dragAnimationProgress.getAverageDelta()),
+                    dragDistanceMax * 0.0001
+                );
+                animProgress = dragAnimationProgress.value;
+            }
+
+            animProgress = animProgress;
+        }, 1000 / 240);
+
+        requestAnimationFrame(function update() {
+            animProgressVisual = animProgress;
+            requestAnimationFrame(update);
+        });
+    });
 
     let splay = 60;
     let faceStates: FaceState[] = [
@@ -17,6 +62,11 @@
         new FaceState(4),
         new FaceState(5)
     ];
+
+    function prepareAnimation() {
+        faceStates.forEach(face => face.clearFaceChangedPrev());
+        animProgress = 0;
+    }
 
     function getFace(y: number, x: number): FaceState {
         if (y === 0) {
@@ -37,6 +87,8 @@
     }
 
     function rotateRowRight(rowIndex: number) {
+        prepareAnimation();
+
         let lastFaceRowData = getFace(0, 3).getRow(rowIndex);
 
         for (let i = 3; i >= 1; i--) {
@@ -61,6 +113,8 @@
     }
 
     function rotateRowLeft(rowIndex: number) {
+        prepareAnimation();
+
         let firstFaceRowData = getFace(0, 0).getRow(rowIndex);
 
         for (let i = 1; i <= 3; i++) {
@@ -85,6 +139,8 @@
     }
 
     function rotateColUp(colIndex: number) {
+        prepareAnimation();
+
         let firstFaceColData = getFace(0, 0).getCol(colIndex);
 
         for (let i = 1; i <= 3; i++) {
@@ -109,6 +165,8 @@
     }
 
     function rotateColDown(colIndex: number) {
+        prepareAnimation();
+
         let lastFaceColData = getFace(3, 0).getCol(colIndex);
 
         for (let i = 3; i >= 1; i--) {
@@ -179,8 +237,246 @@
     $: cssVarStyles = `
         --game-tilt-deg: ${splay}deg;
         --game-tilt-origin-z: ${-22876 * Math.pow(splay, -1.132)}px;
+        --game-anim-progress: ${animProgressVisual};
+        --game-anim-progress-inv: ${1 - animProgressVisual};
     `;
+
+    enum DragMode {
+        Inactive,
+        Free,
+        RowRight,
+        RowLeft,
+        ColUp,
+        ColDown
+    }
+
+    const dragDistanceMax = 200;
+
+    let dragMode: DragMode = DragMode.Inactive;
+    let dragStartX: number = 0;
+    let dragStartY: number = 0;
+    let dragRowIndex: number = 0;
+    let dragColIndex: number = 0;
+    let dragAnimationProgress: HistoryNumberVar = new HistoryNumberVar(10, 0);
+
+    const dragThreshold = 10;
+
+    function onFaceMouseDown(rowIndex: number, colIndex: number, clientX: number, clientY: number) {
+        dragMode = DragMode.Free;
+        dragStartX = clientX;
+        dragStartY = clientY;
+        dragRowIndex = rowIndex;
+        dragColIndex = colIndex;
+        dragAnimationProgress.set(0);
+        dragAnimationProgress.clearHistory();
+    }
+
+    function onMouseMove(event: MouseEvent) {
+        let deltaX = event.clientX - dragStartX;
+        let deltaY = event.clientY - dragStartY;
+
+        onDragMove(deltaX, deltaY);
+    }
+
+    function onTouchMove(event: TouchEvent) {
+        let deltaX = event.touches[0].clientX - dragStartX;
+        let deltaY = event.touches[0].clientY - dragStartY;
+
+        onDragMove(deltaX, deltaY);
+    }
+    
+    function onDragMove(deltaX: number, deltaY: number) {
+        if (dragMode == DragMode.Inactive) return;
+    
+        // If we haven't decided on a drag mode yet, check if we've moved enough to decide
+        if (dragMode == DragMode.Free) {
+            if (Math.abs(deltaX) > dragThreshold) {
+                if (deltaX > 0) {
+                    dragMode = DragMode.RowRight;
+                    rotateRowRight(dragRowIndex);
+                } else {
+                    dragMode = DragMode.RowLeft;
+                    rotateRowLeft(dragRowIndex);
+                }
+            } else if (Math.abs(deltaY) > dragThreshold) {
+                if (deltaY > 0) {
+                    dragMode = DragMode.ColDown;
+                    rotateColDown(dragColIndex);
+                } else {
+                    dragMode = DragMode.ColUp;
+                    rotateColUp(dragColIndex);
+                }
+            }
+        }
+
+        if (dragMode == DragMode.RowLeft) {
+            if (deltaX > 0) {
+                rotateRowRight(dragRowIndex);
+                rotateRowRight(dragRowIndex);
+                dragMode = DragMode.RowRight;
+            }
+            dragAnimationProgress.set(Math.min(1, Math.abs(deltaX) / dragDistanceMax));
+        } else if (dragMode == DragMode.RowRight) {
+            if (deltaX < 0) {
+                rotateRowLeft(dragRowIndex);
+                rotateRowLeft(dragRowIndex);
+                dragMode = DragMode.RowLeft;
+            }
+            dragAnimationProgress.set(Math.min(1, Math.abs(deltaX) / dragDistanceMax));
+        } else if (dragMode == DragMode.ColUp) {
+            if (deltaY > 0) {
+                rotateColDown(dragColIndex);
+                rotateColDown(dragColIndex);
+                dragMode = DragMode.ColDown;
+            }
+            dragAnimationProgress.set(Math.min(1, Math.abs(deltaY) / dragDistanceMax));
+        } else if (dragMode == DragMode.ColDown) {
+            if (deltaY < 0) {
+                rotateColUp(dragColIndex);
+                rotateColUp(dragColIndex);
+                dragMode = DragMode.ColUp;
+            }
+            dragAnimationProgress.set(Math.min(1, Math.abs(deltaY) / dragDistanceMax));
+        }
+    }
+
+    function onDragEnd() {
+        wheelDragStarted = false;
+        if (dragMode == DragMode.Inactive) return;
+
+        // Cancel if we haven't dragged far enough
+        if (
+            (dragAnimationProgress.value < 0.25) &&
+            (dragAnimationProgress.getAverageDelta() < 0.05)
+        ) {
+            if (dragMode == DragMode.RowLeft) {
+                rotateRowRight(dragRowIndex);
+            } else if (dragMode == DragMode.RowRight) {
+                rotateRowLeft(dragRowIndex);
+            } else if (dragMode == DragMode.ColUp) {
+                rotateColDown(dragColIndex);
+            } else if (dragMode == DragMode.ColDown) {
+                rotateColUp(dragColIndex);
+            }
+            animProgress = 1 - dragAnimationProgress.value;
+        }
+
+        dragMode = DragMode.Inactive;
+    }
+
+    function onTouchStart(event: TouchEvent) {
+        // So, this is gonna be a hack
+        // When you assign a touchStart handler on an element and the element disappears,
+        // the touchMove events don't fire after that, even if they're not assigned to the same element.
+        // So, we need to attach the touchMove event to the window instead.
+        // fun
+
+        // Check target has class ".game-tile"
+        const eTile = event.target as HTMLElement;
+        if (!eTile.classList.contains("game-tile")) return;
+        
+        // We need to know which tile was touched, so we need to get some data attributes from the element and cast to int
+        const rowIndexStr = eTile.getAttribute("data-y");
+        const colIndexStr = eTile.getAttribute("data-x");
+        if (!rowIndexStr || !colIndexStr) return;
+        const rowIndex = parseInt(rowIndexStr);
+        const colIndex = parseInt(colIndexStr);
+
+        // No seriously, why the FUCK does this work
+        // Like, target still gets destroyed with the element right?
+        // So why does this work and the normal way doesn't?
+        // Stupid fucking JS bullshit
+        const touchMoveHandler = (e: Event) => onTouchMove(e as TouchEvent);
+        const touchEndHandler = () => {
+            event.target?.removeEventListener("touchmove", touchMoveHandler);
+            event.target?.removeEventListener("touchend", touchEndHandler);
+            onDragEnd();
+        }
+        event.target?.addEventListener("touchmove", touchMoveHandler);
+        event.target?.addEventListener("touchend", touchEndHandler);
+
+        // Finally, start the drag
+        dragMode = DragMode.Free;
+        dragStartX = event.touches[0].clientX;
+        dragStartY = event.touches[0].clientY;
+        dragRowIndex = rowIndex;
+        dragColIndex = colIndex;
+        dragAnimationProgress.set(0);
+        dragAnimationProgress.clearHistory();
+    }
+
+    let wheelDragStarted = false;
+    let wheelDragDeltaX = 0;
+    let wheelDragDeltaY = 0;
+    let wheelDragTimeout: number;
+    let wheelDragTimeLast = 0;
+
+    function onMouseWheel(event: WheelEvent) {
+        event.preventDefault();
+
+        let timeSinceLastDragEvent = performance.now() - wheelDragTimeLast;
+        wheelDragTimeLast = performance.now();
+        
+        if (timeSinceLastDragEvent > 70) {
+            // Check target has class ".game-tile"
+            const eTile = event.target as HTMLElement;
+            if (!eTile.classList.contains("game-tile")) return;
+            
+            // We need to know which tile was touched, so we need to get some data attributes from the element and cast to int
+            const rowIndexStr = eTile.getAttribute("data-y");
+            const colIndexStr = eTile.getAttribute("data-x");
+            if (!rowIndexStr || !colIndexStr) return;
+            
+            dragMode = DragMode.Free;
+            wheelDragStarted = true;
+            wheelDragDeltaX = 0;
+            wheelDragDeltaY = 0;
+            dragRowIndex = parseInt(rowIndexStr);
+            dragColIndex = parseInt(colIndexStr);
+            dragAnimationProgress.set(0);
+            dragAnimationProgress.clearHistory();
+        } 
+
+        if (!wheelDragStarted) return;
+
+        let fac = .5;
+        let deltaX = absCap(
+            event.deltaX * fac,
+            dragDistanceMax * 0.05
+        );
+        let deltaY = absCap(
+            event.deltaY * fac,
+            dragDistanceMax * 0.05
+        );
+
+        wheelDragDeltaX = absCap(
+            wheelDragDeltaX - deltaX,
+            dragDistanceMax
+        );
+        wheelDragDeltaY = absCap(
+            wheelDragDeltaY - deltaY,
+            dragDistanceMax
+        );
+
+        onDragMove(wheelDragDeltaX, wheelDragDeltaY);
+
+        clearInterval(wheelDragTimeout);
+        wheelDragTimeout = setTimeout(() => {
+            onDragEnd();
+        }, 250);
+
+        if (dragAnimationProgress.value > 0.25) {
+            onDragEnd();
+        }
+    }
 </script>
+
+<svelte:window
+    on:mousemove={onMouseMove}
+    on:mouseup={onDragEnd}
+    on:touchstart|nonpassive={onTouchStart}
+    on:wheel|nonpassive={onMouseWheel}
+/>
 
 <KeyHandler
     bind:this={handler}
@@ -192,7 +488,8 @@
     <Face
         state={faceStates[0]}
         onFaceClick={clickCenterFace}
-        />
+        onFaceMouseDown={onFaceMouseDown}
+    />
     <Face
         state={faceStates[1]}
         tilt={FaceTilt.Right}
@@ -229,4 +526,13 @@
         perspective: 1000px;
         position: relative;
     }
+
+    * {
+        user-select: none;
+        touch-action: none;
+    }
+
+    html, body {
+       overscroll-behavior-x: none;
+    } 
 </style>
